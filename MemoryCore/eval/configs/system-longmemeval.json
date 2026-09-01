@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "dataset_file": "../private/longmemeval/longmemeval_s_cleaned.json",
+  "output_dir": "../runs",
+  "seed": 20260831,
+  "per_stratum": 1,
+  "concurrency": 3,
+  "variants": ["no_memory", "full_bm25", "full_dense", "full_hybrid", "l01_hybrid"],
+  "top_k": 5,
+  "context_chars": 18000,
+  "judge_model": "glm-5.2",
+  "audit_judge_model": "qwen3-235b-a22b-instruct-2507",
+  "bootstrap_samples": 2000
+}

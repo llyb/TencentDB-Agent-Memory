@@ -16,6 +16,16 @@ source "$SCRIPT_DIR/_lib.sh"
 load_env
 require_vars MEMORY_CORE_IMAGE MEMORY_CORE_PORT MEMORY_CORE_VOLUME
 
+# Validate model configuration before touching an existing container.
+require_vars MEMORY_LLM_BASE_URL MEMORY_LLM_API_KEY MEMORY_LLM_MODEL
+MEMORY_EMBEDDING_PROVIDER="${MEMORY_EMBEDDING_PROVIDER:-none}"
+MEMORY_EMBEDDING_SEND_DIMENSIONS="${MEMORY_EMBEDDING_SEND_DIMENSIONS:-false}"
+if [[ "$MEMORY_EMBEDDING_PROVIDER" != "none" ]]; then
+  require_vars MEMORY_EMBEDDING_BASE_URL MEMORY_EMBEDDING_API_KEY MEMORY_EMBEDDING_MODEL MEMORY_EMBEDDING_DIMENSIONS
+  [[ "$MEMORY_EMBEDDING_DIMENSIONS" =~ ^[1-9][0-9]*$ ]] || die "MEMORY_EMBEDDING_DIMENSIONS 必须是正整数"
+  [[ "$MEMORY_EMBEDDING_SEND_DIMENSIONS" == "true" || "$MEMORY_EMBEDDING_SEND_DIMENSIONS" == "false" ]] || die "MEMORY_EMBEDDING_SEND_DIMENSIONS 必须是 true 或 false"
+fi
+
 # ── Gateway 内部管理凭据 ─────────────────────────────────────────
 # 用 ${VAR-default}（不是 :-default）：允许 .env 里显式设为空字符串来关闭 Bearer gate。
 #
@@ -99,7 +109,12 @@ memory:
     timeoutMs: 5000
   storeBackend: sqlite
   embedding:
-    provider: none
+    provider: "${MEMORY_EMBEDDING_PROVIDER}"
+    baseUrl: "${MEMORY_EMBEDDING_BASE_URL:-}"
+    apiKey: "${MEMORY_EMBEDDING_API_KEY:-}"
+    model: "${MEMORY_EMBEDDING_MODEL:-}"
+    dimensions: ${MEMORY_EMBEDDING_DIMENSIONS:-0}
+    sendDimensions: ${MEMORY_EMBEDDING_SEND_DIMENSIONS}
 
 # ── Skill 模块 ──
 skill:
@@ -127,7 +142,8 @@ $DOCKER run -d --name "$CONTAINER" \
   --network-alias memory-core \
   -p "${MEMORY_CORE_PORT}:8420" \
   -v "${MEMORY_CORE_VOLUME}:/data/tdai-memory" \
-  -v "$CORE_CONFIG_FILE:/data/config/tdai-gateway.yaml:ro" \
+  --mount "type=bind,source=$(docker_bind_path "$CORE_CONFIG_FILE"),target=/data/config/tdai-gateway.yaml,readonly" \
+  -e TDAI_GATEWAY_CONFIG=/data/config/tdai-gateway.yaml \
   -e TDAI_GATEWAY_PORT=8420 \
   -e TDAI_GATEWAY_HOST=0.0.0.0 \
   -e TDAI_GATEWAY_API_KEY="$MEMORY_CORE_GATEWAY_API_KEY" \
@@ -172,14 +188,32 @@ fi
 
 verify_user_key() {
   local key="$1"
-  local code
-  code=$(curl -sS -o "$CURL_SINK" -w "%{http_code}" --max-time 5 \
+  local code body_file curl_rc=0 result=1
+  body_file=$(mktemp) || return 1
+  code=$(llm_curl "$body_file" --max-time 5 \
     -X POST -H "Content-Type: application/json" \
     -H "x-tdai-service-id: default" \
     ${MEMORY_CORE_GATEWAY_API_KEY:+-H "Authorization: Bearer ${MEMORY_CORE_GATEWAY_API_KEY}"} \
     "http://localhost:${MEMORY_CORE_PORT}/v3/meta/auth/verify" \
-    -d "$(printf '{"user_key":"%s"}' "$key")" 2>/dev/null || echo "000")
-  [[ "$code" == "200" ]]
+    -d "$(printf '{"user_key":"%s"}' "$key")") || curl_rc=$?
+  # The API returns HTTP 200 even for valid=false. Parse the envelope using
+  # the running Core's Node runtime; do not print the response or credential.
+  if (( curl_rc == 0 )) && [[ "$code" == "200" ]] &&
+    $DOCKER exec -i "$CONTAINER" node -e '
+      let input = "";
+      process.stdin.on("data", chunk => input += chunk);
+      process.stdin.on("end", () => {
+        try {
+          const body = JSON.parse(input);
+          process.exit(body.code === 0 && body.data?.valid === true &&
+            typeof body.data.user?.user_id === "string" && body.data.user.user_id.length > 0 ? 0 : 1);
+        } catch { process.exit(1); }
+      });
+    ' < "$body_file"; then
+    result=0
+  fi
+  rm -f "$body_file"
+  return "$result"
 }
 
 info "初始化 admin user（username=${MEMORY_CORE_ADMIN_USERNAME}, key 持久化 → $ADMIN_KEY_FILE）..."
@@ -231,9 +265,9 @@ if [[ -s "$ADMIN_KEY_FILE" ]]; then
   if verify_user_key "$ADMIN_KEY"; then
     # 只在末尾做脱敏输出：整串路径 masked，让终端历史里不留全值
     masked="${ADMIN_KEY:0:11}****${ADMIN_KEY: -4}"
-    ok "admin user_key 校验通过（auth/verify 200）—— $masked"
+    ok "admin user_key 校验通过（auth/verify valid=true）—— $masked"
     ok "  key file: $ADMIN_KEY_FILE"
   else
-    warn "admin user_key 校验失败（auth/verify 非 200）。检查 $ADMIN_KEY_FILE 与 volume 是否匹配。"
+    warn "admin user_key 校验失败（HTTP/传输错误或 valid=false）。检查 $ADMIN_KEY_FILE 与 volume 是否匹配；不要清空数据卷来修复凭据。"
   fi
 fi

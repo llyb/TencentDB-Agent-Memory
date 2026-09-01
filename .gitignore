@@ -70,6 +70,9 @@ deploy/global-images/.memory-core-config/
 
 # Eval scripts output
 scripts/eval-report.json
+MemoryCore/eval/runs/
+MemoryCore/eval/private/
+MemoryCore/eval/configs/*.local.json
 
 # OS files
 .DS_Store

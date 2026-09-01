@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "official_evaluator_sha256": "c98b8d1096877a15aa755c9de44fe33c195298466a2eb6f3c0f9f6bde8c72349",
+  "official_dataset_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+  "numpy": "2.3.5",
+  "numpy_asfarray_compatibility_shim": true,
+  "verified_rows": 1000,
+  "verified_scored_questions": {
+    "all": 470,
+    "user": 419
+  },
+  "verified_exclusions": {
+    "all": {
+      "abstention": 30
+    },
+    "user": {
+      "abstention": 30,
+      "no_user_evidence": 51
+    }
+  },
+  "metrics": {
+    "all": {
+      "recall_any_at_5": 0.9723404255319149,
+      "recall_all_at_5": 0.8382978723404255,
+      "ndcg_at_5": 0.8892842417050825
+    },
+    "user": {
+      "recall_any_at_5": 0.9474940334128878,
+      "recall_all_at_5": 0.837708830548926,
+      "ndcg_at_5": 0.8654387445146408
+    }
+  },
+  "checks": [
+    "all original session positions retained",
+    "content hashes and source-message mapping",
+    "independent gold/denominator reconstruction",
+    "per-question upstream evaluator parity"
+  ]
+}

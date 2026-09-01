@@ -148,7 +148,7 @@ $DOCKER run -d --name "$CONTAINER" \
   --network-alias proxy \
   --add-host=host.docker.internal:host-gateway \
   -p "${PROXY_PORT}:8096" \
-  -v "$CONFIG_FILE:/data/config.yaml:ro" \
+  --mount "type=bind,source=$(docker_bind_path "$CONFIG_FILE"),target=/data/config.yaml,readonly" \
   "$PROXY_IMAGE" >/dev/null
 
 wait_healthy "$CONTAINER" 90

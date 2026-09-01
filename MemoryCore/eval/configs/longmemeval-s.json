@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "dataset_file": "../private/longmemeval/longmemeval_s_cleaned.json",
+  "output_dir": "../runs",
+  "roles": ["all", "user"],
+  "strategy": "bm25",
+  "granularity": "session",
+  "top_k": 5,
+  "seed": 20260831,
+  "bootstrap_samples": 2000
+}

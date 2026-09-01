@@ -1,0 +1,1178 @@
+{
+  "run": {
+    "schema_version": 1,
+    "run_id": "longmemeval-2026-08-31T06-26-05-642Z-3ef6c67c",
+    "config_hash": "6db0117eeee1ef77db8455309f7738c4740b780961fe3e11d638f163c8b6e758",
+    "model": null,
+    "repo_commit": "50f33f52217a540111f56f43c385acb319c964f6",
+    "source_hash": "a444d1eb803521a8a2847d5259b20d8515359e591e78cd7d157d96d2dfbfb2f9",
+    "prompt_version": "none-verbatim-session-v1",
+    "dataset_hash": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "snapshot_hash": "826fa99b2bba767fd824800c063985e22c0a339c42c7d304c6584fd44e874374",
+    "started_at": "2026-08-31T06:26:05.644Z",
+    "repo_dirty": true,
+    "runtime": {
+      "node": "v24.18.0",
+      "platform": "win32",
+      "arch": "x64",
+      "tokenizer": "@node-rs/jieba:cutForSearch",
+      "jieba_version": "2.0.2",
+      "sqlite_vec_version": "0.1.7-alpha.2",
+      "zod_version": "4.5.4",
+      "tsx_version": "4.23.13"
+    }
+  },
+  "source": {
+    "dataset": "xiaowu0162/longmemeval-cleaned",
+    "revision": "98d7416c24c778c2fee6e6f3006e7a073259d48f",
+    "filename": "longmemeval_s_cleaned.json",
+    "bytes": 277383467,
+    "sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "repository": "https://github.com/xiaowu0162/LongMemEval",
+    "repository_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "evaluator_sha256": "c98b8d1096877a15aa755c9de44fe33c195298466a2eb6f3c0f9f6bde8c72349",
+    "license": "MIT",
+    "license_copyright": "Copyright (c) 2024 Di Wu"
+  },
+  "expected_rows": 1000,
+  "completed_rows": 1000,
+  "full_dataset": true,
+  "failed": false,
+  "finished_at": "2026-08-31T06:26:47.650Z",
+  "memory_retrieval": [
+    {
+      "roles": "all",
+      "subset": "all",
+      "total": 500,
+      "eligible": 470,
+      "scored": 470,
+      "comparable": true,
+      "excluded": {
+        "abstention": 30
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.9165248226950357,
+          "n": 470,
+          "ci95": [
+            0.8960992907801423,
+            0.9350000000000002
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9723404255319149,
+          "n": 470,
+          "ci95": [
+            0.9553191489361702,
+            0.9851063829787234
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9175531914893615,
+          "n": 470,
+          "ci95": [
+            0.8959574468085104,
+            0.9374113475177305
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.8382978723404255,
+          "n": 470,
+          "ci95": [
+            0.8021276595744681,
+            0.8702127659574468
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8892842417050825,
+          "n": 470,
+          "ci95": [
+            0.867741782177384,
+            0.909162150632005
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9699645390070922,
+          "n": 470,
+          "ci95": [
+            0.9585815602836881,
+            0.9796808510638298
+          ]
+        }
+      },
+      "latency_ms_p50": 1.5597000000016124,
+      "latency_ms_p95": 2.7871999999988475,
+      "index_ms_p50": 55.41670000000158,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 30
+      },
+      "candidate_miss_count": 32,
+      "ranking_miss_count": 57
+    },
+    {
+      "roles": "all",
+      "subset": "single-session-user",
+      "total": 70,
+      "eligible": 64,
+      "scored": 64,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.96015625,
+          "n": 64,
+          "ci95": [
+            0.9164062500000001,
+            0.9921875
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.9832918212198968,
+          "n": 64,
+          "ci95": [
+            0.9576879636596903,
+            1
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 1.4201999999995678,
+      "latency_ms_p95": 2.3497000000006665,
+      "index_ms_p50": 56.816899999999805,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 0
+    },
+    {
+      "roles": "all",
+      "subset": "multi-session",
+      "total": 133,
+      "eligible": 121,
+      "scored": 121,
+      "comparable": true,
+      "excluded": {
+        "abstention": 12
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8380165289256198,
+          "n": 121,
+          "ci95": [
+            0.7877410468319559,
+            0.881404958677686
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9586776859504132,
+          "n": 121,
+          "ci95": [
+            0.9173553719008265,
+            0.9917355371900827
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.922176308539945,
+          "n": 121,
+          "ci95": [
+            0.8767217630853994,
+            0.9607438016528925
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.6694214876033058,
+          "n": 121,
+          "ci95": [
+            0.5785123966942148,
+            0.7520661157024794
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8094141804043358,
+          "n": 121,
+          "ci95": [
+            0.7629432314124492,
+            0.8521723755940023
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9345730027548209,
+          "n": 121,
+          "ci95": [
+            0.9023415977961433,
+            0.9612947658402203
+          ]
+        }
+      },
+      "latency_ms_p50": 1.5542000000004919,
+      "latency_ms_p95": 2.3729999999995925,
+      "index_ms_p50": 55.360499999998865,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 12
+      },
+      "candidate_miss_count": 19,
+      "ranking_miss_count": 29
+    },
+    {
+      "roles": "all",
+      "subset": "single-session-preference",
+      "total": 30,
+      "eligible": 30,
+      "scored": 30,
+      "comparable": true,
+      "excluded": {},
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8666666666666667,
+          "n": 30,
+          "ci95": [
+            0.7333333333333333,
+            0.9666666666666667
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.8666666666666667,
+          "n": 30,
+          "ci95": [
+            0.7333333333333333,
+            0.9666666666666667
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.6605555555555556,
+          "n": 30,
+          "ci95": [
+            0.5194444444444444,
+            0.7966666666666666
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.8666666666666667,
+          "n": 30,
+          "ci95": [
+            0.7333333333333333,
+            0.9666666666666667
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.7874404207763235,
+          "n": 30,
+          "ci95": [
+            0.6517963060454366,
+            0.9120451038715596
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 30,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 1.4227999999984604,
+      "latency_ms_p95": 2.55370000000039,
+      "index_ms_p50": 54.54460000000108,
+      "unsupported_retrieval": {
+        "value": null,
+        "n": 0
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 4
+    },
+    {
+      "roles": "all",
+      "subset": "temporal-reasoning",
+      "total": 133,
+      "eligible": 127,
+      "scored": 127,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8847769028871392,
+          "n": 127,
+          "ci95": [
+            0.8421259842519685,
+            0.924540682414698
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.968503937007874,
+          "n": 127,
+          "ci95": [
+            0.937007874015748,
+            0.9921259842519685
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.8830708661417325,
+          "n": 127,
+          "ci95": [
+            0.8328083989501313,
+            0.9265091863517059
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.7637795275590551,
+          "n": 127,
+          "ci95": [
+            0.6850393700787402,
+            0.8346456692913385
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.849161554351735,
+          "n": 127,
+          "ci95": [
+            0.8017684815193462,
+            0.8912982839535313
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9551181102362204,
+          "n": 127,
+          "ci95": [
+            0.9251968503937007,
+            0.9790026246719162
+          ]
+        }
+      },
+      "latency_ms_p50": 1.5597000000016124,
+      "latency_ms_p95": 2.6970000000001164,
+      "index_ms_p50": 54.91729999999734,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 12,
+      "ranking_miss_count": 23
+    },
+    {
+      "roles": "all",
+      "subset": "knowledge-update",
+      "total": 78,
+      "eligible": 72,
+      "scored": 72,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.9861111111111112,
+          "n": 72,
+          "ci95": [
+            0.9652777777777778,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 72,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9756944444444444,
+          "n": 72,
+          "ci95": [
+            0.9444444444444444,
+            1
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.9722222222222222,
+          "n": 72,
+          "ci95": [
+            0.9305555555555556,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.9670426553948691,
+          "n": 72,
+          "ci95": [
+            0.9357390642123568,
+            0.9897480487103183
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9930555555555556,
+          "n": 72,
+          "ci95": [
+            0.9791666666666666,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 1.4284000000043306,
+      "latency_ms_p95": 2.311699999998382,
+      "index_ms_p50": 55.68509999999878,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 1,
+      "ranking_miss_count": 1
+    },
+    {
+      "roles": "all",
+      "subset": "single-session-assistant",
+      "total": 56,
+      "eligible": 56,
+      "scored": 56,
+      "comparable": true,
+      "excluded": {},
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 56,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 2.267099999997299,
+      "latency_ms_p95": 3.4870999999984633,
+      "index_ms_p50": 55.66330000000016,
+      "unsupported_retrieval": {
+        "value": null,
+        "n": 0
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 0
+    },
+    {
+      "roles": "all",
+      "subset": "no_future_history",
+      "total": 424,
+      "eligible": 401,
+      "scored": 401,
+      "comparable": true,
+      "excluded": {
+        "abstention": 23
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.9093100581878638,
+          "n": 401,
+          "ci95": [
+            0.8857024106400665,
+            0.9305486284289277
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9675810473815462,
+          "n": 401,
+          "ci95": [
+            0.9476309226932669,
+            0.9850374064837906
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9093931837073981,
+          "n": 401,
+          "ci95": [
+            0.8837489609310056,
+            0.9340399002493763
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.830423940149626,
+          "n": 401,
+          "ci95": [
+            0.7930174563591023,
+            0.8678304239401496
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8815205610089738,
+          "n": 401,
+          "ci95": [
+            0.8564731988840076,
+            0.9045726631141751
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9656275976724854,
+          "n": 401,
+          "ci95": [
+            0.9515793848711556,
+            0.977930174563591
+          ]
+        }
+      },
+      "latency_ms_p50": 1.5717999999978929,
+      "latency_ms_p95": 2.8295000000034634,
+      "index_ms_p50": 55.431799999998475,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 23
+      },
+      "candidate_miss_count": 31,
+      "ranking_miss_count": 50
+    },
+    {
+      "roles": "user",
+      "subset": "all",
+      "total": 500,
+      "eligible": 419,
+      "scored": 419,
+      "comparable": true,
+      "excluded": {
+        "abstention": 30,
+        "no_user_evidence": 51
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8980509148766904,
+          "n": 419,
+          "ci95": [
+            0.8706443914081144,
+            0.9214797136038188
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9474940334128878,
+          "n": 419,
+          "ci95": [
+            0.9236276849642004,
+            0.9665871121718377
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.8741447891805887,
+          "n": 419,
+          "ci95": [
+            0.84502784407319,
+            0.9004375497215592
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.837708830548926,
+          "n": 419,
+          "ci95": [
+            0.801909307875895,
+            0.8711217183770883
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8654387445146408,
+          "n": 419,
+          "ci95": [
+            0.8373201045930545,
+            0.8898514613739932
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9467382657120127,
+          "n": 419,
+          "ci95": [
+            0.9264518695306286,
+            0.964598249801114
+          ]
+        }
+      },
+      "latency_ms_p50": 0.903400000000147,
+      "latency_ms_p95": 1.5153000000063912,
+      "index_ms_p50": 12.971299999999246,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 30
+      },
+      "candidate_miss_count": 35,
+      "ranking_miss_count": 43
+    },
+    {
+      "roles": "user",
+      "subset": "single-session-user",
+      "total": 70,
+      "eligible": 64,
+      "scored": 64,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9765625,
+          "n": 64,
+          "ci95": [
+            0.9453125,
+            1
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 64,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 0.8076000000000931,
+      "latency_ms_p95": 1.282799999999952,
+      "index_ms_p50": 14.043100000000777,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 0
+    },
+    {
+      "roles": "user",
+      "subset": "multi-session",
+      "total": 133,
+      "eligible": 121,
+      "scored": 121,
+      "comparable": true,
+      "excluded": {
+        "abstention": 12
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8557851239669422,
+          "n": 121,
+          "ci95": [
+            0.8042699724517908,
+            0.8983471074380167
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9586776859504132,
+          "n": 121,
+          "ci95": [
+            0.9173553719008265,
+            0.9917355371900827
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.8794765840220388,
+          "n": 121,
+          "ci95": [
+            0.8285123966942147,
+            0.9256198347107437
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.7272727272727273,
+          "n": 121,
+          "ci95": [
+            0.6446280991735537,
+            0.8016528925619835
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8063290447963585,
+          "n": 121,
+          "ci95": [
+            0.7557928741398093,
+            0.8528340916823659
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9136363636363635,
+          "n": 121,
+          "ci95": [
+            0.8723140495867768,
+            0.9476584022038569
+          ]
+        }
+      },
+      "latency_ms_p50": 0.8906000000006316,
+      "latency_ms_p95": 1.2173000000002503,
+      "index_ms_p50": 12.989400000000387,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 12
+      },
+      "candidate_miss_count": 20,
+      "ranking_miss_count": 19
+    },
+    {
+      "roles": "user",
+      "subset": "single-session-preference",
+      "total": 30,
+      "eligible": 30,
+      "scored": 30,
+      "comparable": true,
+      "excluded": {},
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.7666666666666667,
+          "n": 30,
+          "ci95": [
+            0.6,
+            0.9
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.7666666666666667,
+          "n": 30,
+          "ci95": [
+            0.6,
+            0.9
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.5538888888888889,
+          "n": 30,
+          "ci95": [
+            0.40666666666666657,
+            0.7055555555555556
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.7666666666666667,
+          "n": 30,
+          "ci95": [
+            0.6,
+            0.9
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.6695108441976895,
+          "n": 30,
+          "ci95": [
+            0.5174573004761943,
+            0.81157282776912
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.8333333333333334,
+          "n": 30,
+          "ci95": [
+            0.7,
+            0.9666666666666667
+          ]
+        }
+      },
+      "latency_ms_p50": 0.9167000000015832,
+      "latency_ms_p95": 1.3755000000001019,
+      "index_ms_p50": 12.215400000000955,
+      "unsupported_retrieval": {
+        "value": null,
+        "n": 0
+      },
+      "candidate_miss_count": 5,
+      "ranking_miss_count": 2
+    },
+    {
+      "roles": "user",
+      "subset": "temporal-reasoning",
+      "total": 133,
+      "eligible": 127,
+      "scored": 127,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.864041994750656,
+          "n": 127,
+          "ci95": [
+            0.8086614173228347,
+            0.9141732283464566
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9212598425196851,
+          "n": 127,
+          "ci95": [
+            0.8740157480314961,
+            0.9606299212598425
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.836482939632546,
+          "n": 127,
+          "ci95": [
+            0.7771653543307087,
+            0.8893700787401575
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.7952755905511811,
+          "n": 127,
+          "ci95": [
+            0.7244094488188977,
+            0.8661417322834646
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8345708379461787,
+          "n": 127,
+          "ci95": [
+            0.7770660819513048,
+            0.8856734099451459
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9459317585301837,
+          "n": 127,
+          "ci95": [
+            0.9055118110236221,
+            0.9800524934383202
+          ]
+        }
+      },
+      "latency_ms_p50": 0.9016000000010536,
+      "latency_ms_p95": 1.413700000000972,
+      "index_ms_p50": 12.593399999997928,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 10,
+      "ranking_miss_count": 20
+    },
+    {
+      "roles": "user",
+      "subset": "knowledge-update",
+      "total": 78,
+      "eligible": 72,
+      "scored": 72,
+      "comparable": true,
+      "excluded": {
+        "abstention": 6
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.9861111111111112,
+          "n": 72,
+          "ci95": [
+            0.9652777777777778,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 72,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9722222222222222,
+          "n": 72,
+          "ci95": [
+            0.9444444444444444,
+            0.9930555555555556
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.9722222222222222,
+          "n": 72,
+          "ci95": [
+            0.9305555555555556,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.97190552480805,
+          "n": 72,
+          "ci95": [
+            0.9466907348526927,
+            0.9923110365327386
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 72,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 0.8205999999991036,
+      "latency_ms_p95": 1.2300000000032014,
+      "index_ms_p50": 12.943200000001525,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 6
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 2
+    },
+    {
+      "roles": "user",
+      "subset": "single-session-assistant",
+      "total": 56,
+      "eligible": 5,
+      "scored": 5,
+      "comparable": true,
+      "excluded": {
+        "no_user_evidence": 51
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 1,
+          "n": 5,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "hit_at_5": {
+          "value": 1,
+          "n": 5,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.9,
+          "n": 5,
+          "ci95": [
+            0.7,
+            1
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 1,
+          "n": 5,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 1,
+          "n": 5,
+          "ci95": [
+            1,
+            1
+          ]
+        },
+        "candidate_recall": {
+          "value": 1,
+          "n": 5,
+          "ci95": [
+            1,
+            1
+          ]
+        }
+      },
+      "latency_ms_p50": 1.3721999999979744,
+      "latency_ms_p95": 2.264500000004773,
+      "index_ms_p50": 13.503900000003341,
+      "unsupported_retrieval": {
+        "value": null,
+        "n": 0
+      },
+      "candidate_miss_count": 0,
+      "ranking_miss_count": 0
+    },
+    {
+      "roles": "user",
+      "subset": "no_future_history",
+      "total": 424,
+      "eligible": 350,
+      "scored": 350,
+      "comparable": true,
+      "excluded": {
+        "abstention": 23,
+        "no_user_evidence": 51
+      },
+      "error_count": 0,
+      "metrics": {
+        "recall_at_5": {
+          "value": 0.8850952380952382,
+          "n": 350,
+          "ci95": [
+            0.854904761904762,
+            0.9134285714285714
+          ]
+        },
+        "hit_at_5": {
+          "value": 0.9371428571428572,
+          "n": 350,
+          "ci95": [
+            0.9114285714285715,
+            0.9628571428571429
+          ]
+        },
+        "mrr_at_5": {
+          "value": 0.855904761904762,
+          "n": 350,
+          "ci95": [
+            0.8221428571428573,
+            0.8879047619047619
+          ]
+        },
+        "recall_all_at_5": {
+          "value": 0.82,
+          "n": 350,
+          "ci95": [
+            0.7771428571428571,
+            0.86
+          ]
+        },
+        "ndcg_at_5": {
+          "value": 0.8490460295799609,
+          "n": 350,
+          "ci95": [
+            0.8186253815678822,
+            0.8776687738456593
+          ]
+        },
+        "candidate_recall": {
+          "value": 0.9371904761904761,
+          "n": 350,
+          "ci95": [
+            0.9134285714285714,
+            0.958857142857143
+          ]
+        }
+      },
+      "latency_ms_p50": 0.9084999999977299,
+      "latency_ms_p95": 1.5377000000007683,
+      "index_ms_p50": 12.955500000000029,
+      "unsupported_retrieval": {
+        "value": 1,
+        "n": 23
+      },
+      "candidate_miss_count": 34,
+      "ranking_miss_count": 38
+    }
+  ],
+  "qa": "not_run",
+  "dense_hybrid": "not_run_no_embedding"
+}

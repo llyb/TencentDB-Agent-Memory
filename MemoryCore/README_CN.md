@@ -12,6 +12,10 @@ MemoryCore 独立运行，通过 HTTP Gateway 对外提供这些能力。OpenCla
 
 ## 核心能力
 
+评测与回归：参见 [Memory Eval 入口](eval/README_CN.md)、[完整记忆系统与 Embedding 对照教程](eval/SYSTEM_EVAL_CN.md)、[检索评测实现说明](<../docs/Memory Eval 与共享实验底座.md>) 和 [旧 LongMemEval 会话基线](eval/LONGMEMEVAL_CN.md)。`system --live` 测试 L0→L3→召回→回答，`run` 保留无需模型 API 的会话检索基线；两者边界见 [研究路线](../docs/PROJECT_OPTIMIZATION_RESEARCH_AND_RESUME_CN.md)。
+
+模型接入：当前 Gateway 配置为 `glm-5.2` + `bge-m3`；密钥填写、Docker 生效步骤和验证边界见 [模型配置教程](../docs/MODEL_CONFIGURATION_CN.md)。
+
 - **Memory 存储与处理**：记录 L0 对话，并维护 L1 原子记忆、L2 场景记忆和 L3 核心画像。
 - **Memory 召回**：支持关键词、Embedding 与混合检索；没有 Embedding Provider 时仍可使用 BM25。
 - **Knowledge 元信息登记**：登记知识源并维护其标识、类型、状态、关联关系和服务地址。

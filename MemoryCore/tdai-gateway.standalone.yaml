@@ -17,9 +17,9 @@ data:
 
 # ── LLM (必填) ──
 llm:
-  baseUrl: "https://api.openai.com/v1"
+  baseUrl: "http://10.128.202.100:3010/v1"
   apiKey: "${TDAI_LLM_API_KEY}"    # 通过环境变量注入
-  model: "gpt-4o"
+  model: "glm-5.2"
   maxTokens: 4096
   timeoutMs: 120000
 
@@ -69,13 +69,12 @@ memory:
   #   timeout: 10000
 
   embedding:
-    provider: "none"               # 默认关闭向量搜索, 仅用 BM25
-    # 开启向量搜索示例:
-    # provider: "openai"
-    # baseUrl: "https://api.openai.com/v1"
-    # apiKey: "${TDAI_LLM_API_KEY}"
-    # model: "text-embedding-3-small"
-    # dimensions: 1536
+    provider: "openai"
+    baseUrl: "http://10.128.202.100:3010/v1"
+    apiKey: "${TDAI_EMBEDDING_API_KEY}"  # 手动设置环境变量，勿提交密钥
+    model: "bge-m3"
+    dimensions: 1024
+    sendDimensions: false          # 请求体仅发送 model/input，兼容自部署 BGE
 
   bm25:
     enabled: true

@@ -1,0 +1,7 @@
+# Frozen dataset checksums must survive Windows/Linux checkout unchanged.
+MemoryCore/eval/vendor/** text eol=lf
+# Archived results have byte-level manifests; do not normalize line endings.
+docs/eval-baseline/** -text
+# Deployment scripts and their sourced environment template must work in Git Bash/Linux.
+deploy/global-images/*.sh text eol=lf
+deploy/global-images/.env.example text eol=lf

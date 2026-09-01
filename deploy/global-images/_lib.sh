@@ -7,6 +7,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-$SCRIPT_DIR/.env}"
 
+# Git Bash must not rewrite container paths such as /data/config.yaml for docker.exe.
+# Convert only the host side of bind mounts; leave container paths untouched.
+case "${OSTYPE:-}" in
+  msys*|cygwin*) export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' ;;
+esac
+docker_bind_path() {
+  case "${OSTYPE:-}" in
+    msys*|cygwin*) cygpath -am "$1" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
 # 颜色
 if [[ -t 1 ]]; then
   C_RED=$'\033[31m'; C_GRN=$'\033[32m'; C_YLW=$'\033[33m'; C_BLU=$'\033[34m'; C_RST=$'\033[0m'
@@ -162,6 +174,26 @@ if [[ ! -x "$CURL" ]]; then
   fi
 fi
 
+# Keep curl's exit status separate from its HTTP status. With MSYS path
+# conversion disabled for Docker, native curl also needs a Windows output path.
+llm_curl() {
+  local body_file="$1"
+  shift
+  "$CURL" -q -sS -o "$(docker_bind_path "$body_file")" -w "%{http_code}" "$@" 2>/dev/null
+}
+
+warn_llm_transport() {
+  local label="$1" url="$2" code="$3" curl_rc="$4" hint
+  case "$curl_rc" in
+    23) hint="响应文件写入失败，请检查临时目录路径和权限" ;;
+    28) hint="请求超时，可能在收到 HTTP 响应头后仍未完成响应体传输" ;;
+    6) hint="DNS 解析失败" ;;
+    7) hint="连接失败，请检查网络、端口或代理" ;;
+    *) hint="传输未完成，请检查网络、代理或 TLS 配置" ;;
+  esac
+  warn "$label 请求未完成 ${url}（HTTP=${code:-000}，curl_exit=${curl_rc}）：${hint}"
+}
+
 # check_llm_openai <label> <base_url> <api_key> <model>
 #   OpenAI 兼容：GET {base}/models 只验证 auth+URL，不消耗 token。返回 0 通过 / 1 失败。
 check_llm_openai() {
@@ -170,19 +202,24 @@ check_llm_openai() {
   base="${base%/messages}"
   base="${base%/chat/completions}"
   local url="${base}/models"
-  local code body_file=/tmp/llm-check.$$
-  code=$("$CURL" -sS --max-time 10 -o "$body_file" -w "%{http_code}" \
-    -H "Authorization: Bearer $key" "$url" 2>/dev/null || echo "000")
+  local code body_file curl_rc=0
+  body_file=$(mktemp) || return 1
+  code=$(llm_curl "$body_file" --max-time 10 \
+    -H "Authorization: Bearer $key" "$url") || curl_rc=$?
+  if (( curl_rc != 0 )); then
+    warn_llm_transport "$label" "$url" "$code" "$curl_rc"
+    rm -f "$body_file"
+    return 1
+  fi
   local rc=0
   if [[ "$code" == "200" ]]; then
-    if grep -q "\"$model\"" "$body_file" 2>/dev/null; then
+    if grep -qF "\"$model\"" "$body_file" 2>/dev/null; then
       ok "$label OpenAI 协议通路 OK（$model 在 /models 列表内）"
     else
       ok "$label OpenAI 协议通路 OK（未在 /models 里显式列出 $model，业务侧仍可能可用）"
     fi
   elif [[ "$code" == "401" || "$code" == "403" ]]; then
     warn "$label API key 无效（HTTP ${code}）：$url"
-    head -c 200 "$body_file" >&2; echo >&2
     rc=1
   elif [[ "$code" == "404" ]]; then
     warn "$label GET /models 404 —— 该厂商可能没有该端点，改用 anthropic 协议检查"
@@ -190,7 +227,7 @@ check_llm_openai() {
     check_llm_anthropic "$label" "$base" "$key" "$model"
     return $?
   else
-    warn "$label 无法访问 ${url}（HTTP=${code}）$(head -c 100 "$body_file" 2>/dev/null)"
+    warn "$label 通路检查失败 ${url}（HTTP=${code:-000}）"
     rc=1
   fi
   rm -f "$body_file"
@@ -210,19 +247,24 @@ check_llm_anthropic() {
   else
     url="${base}/v1/messages"
   fi
-  local code body_file=/tmp/llm-check.$$
-  code=$("$CURL" -sS --max-time 15 -o "$body_file" -w "%{http_code}" \
+  local code body_file curl_rc=0
+  body_file=$(mktemp) || return 1
+  code=$(llm_curl "$body_file" --max-time 15 \
     -X POST -H "Content-Type: application/json" \
     -H "x-api-key: $key" -H "Authorization: Bearer $key" \
     -H "anthropic-version: 2023-06-01" \
     -d "{\"model\":\"$model\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}" \
-    "$url" 2>/dev/null || echo "000")
+    "$url") || curl_rc=$?
+  if (( curl_rc != 0 )); then
+    warn_llm_transport "$label" "$url" "$code" "$curl_rc"
+    rm -f "$body_file"
+    return 1
+  fi
   local rc=0
   case "$code" in
     200) ok "$label Anthropic 协议通路 OK（模型 $model 已应答）" ;;
     401|403)
       warn "$label API key 无效（HTTP ${code}）：$url"
-      head -c 200 "$body_file" >&2; echo >&2
       rc=1 ;;
     404)
       warn "$label URL 不存在（HTTP 404）：$url —— 检查 BASE_URL"
@@ -232,11 +274,11 @@ check_llm_anthropic() {
         warn "$label 模型名 '$model' 无效（HTTP 400）"
         rc=1
       else
-        warn "$label HTTP 400（可能是参数格式问题，非通路错）：$(head -c 150 "$body_file")"
+        warn "$label HTTP 400（可能是参数格式问题，非通路错）"
         rc=0
       fi ;;
     *)
-      warn "$label 无法访问 ${url}（HTTP=${code}）$(head -c 100 "$body_file" 2>/dev/null)"
+      warn "$label 通路检查失败 ${url}（HTTP=${code:-000}）"
       rc=1 ;;
   esac
   rm -f "$body_file"

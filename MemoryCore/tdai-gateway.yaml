@@ -10,7 +10,7 @@
 # 启动：
 #   export TDAI_LLM_API_KEY="sk-..."           # 必填
 #   export TDAI_LLM_BASE_URL="https://..."     # 可选（覆盖 yaml）
-#   export TDAI_LLM_MODEL="gpt-4o-mini"        # 可选
+#   export TDAI_LLM_MODEL="glm-5.2"        # 可选
 #   node --import tsx src/gateway/server.ts
 #
 # 自检：
@@ -35,9 +35,9 @@ data:
 # provider 默认 "openai" 即直连；若要走 context_proxy（统一鉴权/账务/观测），
 # 见 tdai-gateway.proxy.yaml 或 docs/llm-via-proxy.md
 llm:
-  baseUrl: "https://api.lkeap.cloud.tencent.com/v1"
+  baseUrl: "http://10.128.202.100:3010/v1"
   apiKey: "${TDAI_LLM_API_KEY}"
-  model: "deepseek-v3.2"
+  model: "glm-5.2"
   maxTokens: 32000
   timeoutMs: 300000
 
@@ -76,13 +76,12 @@ memory:
   storeBackend: "sqlite"
 
   embedding:
-    provider: "none"               # 默认关闭向量搜索, 仅用 BM25
-    # 开启向量搜索示例:
-    # provider: "openai"
-    # baseUrl: "https://api.openai.com/v1"
-    # apiKey: "${TDAI_LLM_API_KEY}"
-    # model: "text-embedding-3-small"
-    # dimensions: 1536
+    provider: "openai"
+    baseUrl: "http://10.128.202.100:3010/v1"
+    apiKey: "${TDAI_EMBEDDING_API_KEY}"  # 手动设置环境变量，勿提交密钥
+    model: "bge-m3"
+    dimensions: 1024
+    sendDimensions: false          # 请求体仅发送 model/input，兼容自部署 BGE
 
   bm25:
     enabled: true
@@ -111,7 +110,7 @@ skill:
   extraction:
     enabled: true                 # 需要顶层 llm 配置有效（baseUrl + apiKey）
     maxIterations: 16             # Review Agent tool-calling 最大迭代轮数
-    # model: "deepseek-v3.2"      # 【复用】不填则复用顶层 llm.model
+    # model: "glm-5.2"      # 【复用】不填则复用顶层 llm.model
     # toolCallThreshold: 10       # 预留字段，暂无消费者
     # 说明：headChars / tailChars 在 service 模式的 per-instance extractor 路径不透传，
     #      因此不在 yaml 暴露；如需调整请改 skill-extractor.ts 默认或补 server.ts 透传。

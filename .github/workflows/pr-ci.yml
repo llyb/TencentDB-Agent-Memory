@@ -14,6 +14,29 @@ defaults:
     working-directory: MemoryCore
 
 jobs:
+  memory-eval:
+    name: Memory Eval Regression
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Restore node_modules
+        uses: actions/cache@v4
+        with:
+          path: MemoryCore/node_modules
+          key: deps-${{ runner.os }}-${{ hashFiles('MemoryCore/package.json') }}
+      - name: Typecheck evaluation code
+        run: npm run typecheck:eval
+      - name: Verify metrics, data contracts and production SQLite integration
+        run: npm run test:eval
+      # The official dataset is downloaded explicitly for full benchmark runs.
+      # CI keeps small contract tests offline; it does not publish benchmark scores.
+      - name: Validate shared trace examples
+        run: npm run eval:memory -- validate-traces --file eval/examples/trace-examples.jsonl
+
   # ── 1. Install dependencies ────────────────────────────────
   install:
     name: Install

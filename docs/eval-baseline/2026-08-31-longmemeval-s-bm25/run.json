@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "run_id": "longmemeval-2026-08-31T06-26-05-642Z-3ef6c67c",
+  "config_hash": "6db0117eeee1ef77db8455309f7738c4740b780961fe3e11d638f163c8b6e758",
+  "model": null,
+  "repo_commit": "50f33f52217a540111f56f43c385acb319c964f6",
+  "source_hash": "a444d1eb803521a8a2847d5259b20d8515359e591e78cd7d157d96d2dfbfb2f9",
+  "prompt_version": "none-verbatim-session-v1",
+  "dataset_hash": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+  "snapshot_hash": "826fa99b2bba767fd824800c063985e22c0a339c42c7d304c6584fd44e874374",
+  "started_at": "2026-08-31T06:26:05.644Z",
+  "repo_dirty": true,
+  "runtime": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "tokenizer": "@node-rs/jieba:cutForSearch",
+    "jieba_version": "2.0.2",
+    "sqlite_vec_version": "0.1.7-alpha.2",
+    "zod_version": "4.5.4",
+    "tsx_version": "4.23.13"
+  }
+}

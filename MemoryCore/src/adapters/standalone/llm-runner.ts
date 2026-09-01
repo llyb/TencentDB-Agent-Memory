@@ -18,7 +18,7 @@
 
 import fsPromises from "node:fs/promises";
 import path from "node:path";
-import { generateText, streamText, tool, stepCountIs, jsonSchema } from "ai";
+import { generateText, streamText, tool, stepCountIs, jsonSchema, type ToolSet } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { report } from "../../core/report/reporter.js";
 import type {
@@ -52,8 +52,8 @@ const MAX_TOOL_ITERATIONS = 20;
  *
  * 未传对应字段时，metadata 里也不出现该键 —— 保持与旧行为完全一致。
  */
-function buildTelemetryMetadata(params: LLMRunParams): Record<string, unknown> {
-  const meta: Record<string, unknown> = {
+function buildTelemetryMetadata(params: LLMRunParams): Record<string, string | number | boolean | string[]> {
+  const meta: Record<string, string | number | boolean | string[]> = {
     instanceId: params.instanceId ?? "unknown",
   };
   if (params.traceName) {
@@ -304,7 +304,6 @@ export class StandaloneLLMRunner implements LLMRunner {
     const provider = createOpenAI({
       baseURL: this.config.baseUrl,
       apiKey: this.config.apiKey,
-      compatibility: "compatible",
     });
 
     // Select tools based on mode + storage
@@ -344,7 +343,7 @@ export class StandaloneLLMRunner implements LLMRunner {
         // (or even a tools-only-with-`read`) makes some OpenAI-compatible
         // backends emit spurious tool calls on pure-text tasks.
         ...(tools && Object.keys(tools).length > 0
-          ? { tools, stopWhen: stepCountIs(maxIterations) }
+          ? { tools: tools as ToolSet, stopWhen: stepCountIs(maxIterations) }
           : {}),
         maxOutputTokens: maxTokens,
         abortSignal: combinedSignal,

@@ -37,106 +37,7 @@ done
 
 ERRORS=0
 WARNS=0
-CURL="$(command -v curl)"
-
-# ─── LLM 通路检查函数 ───────────────────────────────────────────────
-# check_llm_openai <label> <base_url> <api_key> <model>
-#   OpenAI 兼容：GET {base}/models 只验证 auth+URL，不消耗 token。
-#   base_url 允许带或不带 /v1；这里做归一化。
-check_llm_openai() {
-  local label="$1" base="$2" key="$3" model="$4"
-  # 归一化：去尾部 /，去 /messages 或 /chat/completions 后缀
-  base="${base%/}"
-  base="${base%/messages}"
-  base="${base%/chat/completions}"
-  local url="${base}/models"
-  local code body_file=/tmp/llm-check.$$
-  code=$("$CURL" -sS --max-time 10 -o "$body_file" -w "%{http_code}" \
-    -H "Authorization: Bearer $key" \
-    "$url" 2>/dev/null || echo "000")
-  if [[ "$code" == "200" ]]; then
-    # 尝试解析 model 是否在列表里（宽松匹配，不匹配也只 warn）
-    if grep -q "\"$model\"" "$body_file" 2>/dev/null; then
-      ok "$label OpenAI 协议通路 OK（$model 在 /models 列表内）"
-    else
-      ok "$label OpenAI 协议通路 OK（未在 /models 里显式列出 ${model}，业务侧仍可能可用）"
-    fi
-    rm -f "$body_file"
-    return 0
-  elif [[ "$code" == "401" || "$code" == "403" ]]; then
-    echo "${C_RED}[error]${C_RST} $label API key 无效（HTTP ${code}）：$url" >&2
-    head -c 200 "$body_file" >&2; echo >&2
-    rm -f "$body_file"
-    return 1
-  elif [[ "$code" == "404" ]]; then
-    # 部分厂商没有 /models 端点，改用 anthropic 风格或跳过：warn 不 error
-    warn "$label GET /models 404 —— 该厂商可能没有该端点，改用 anthropic 协议检查"
-    check_llm_anthropic "$label" "$base" "$key" "$model"
-    rm -f "$body_file"
-    return $?
-  else
-    warn "$label 无法访问 ${url}（HTTP=${code}）$(head -c 100 "$body_file" 2>/dev/null)"
-    rm -f "$body_file"
-    return 1
-  fi
-}
-
-# check_llm_anthropic <label> <base_url> <api_key> <model>
-#   Anthropic：POST {base}/v1/messages 发 max_tokens=1，消耗 ≤ 10 token 但能同时验 URL/auth/model。
-check_llm_anthropic() {
-  local label="$1" base="$2" key="$3" model="$4"
-  base="${base%/}"
-  # 归一化：若已含 /messages 直接用；否则拼 /v1/messages
-  local url
-  if [[ "$base" == */messages ]]; then
-    url="$base"
-  elif [[ "$base" == */v1 ]]; then
-    url="${base}/messages"
-  else
-    url="${base}/v1/messages"
-  fi
-  local code body_file=/tmp/llm-check.$$
-  code=$("$CURL" -sS --max-time 15 -o "$body_file" -w "%{http_code}" \
-    -X POST -H "Content-Type: application/json" \
-    -H "x-api-key: $key" \
-    -H "Authorization: Bearer $key" \
-    -H "anthropic-version: 2023-06-01" \
-    -d "{\"model\":\"$model\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}" \
-    "$url" 2>/dev/null || echo "000")
-  case "$code" in
-    200)
-      ok "$label Anthropic 协议通路 OK（模型 $model 已应答）"
-      rm -f "$body_file"; return 0 ;;
-    401|403)
-      echo "${C_RED}[error]${C_RST} $label API key 无效（HTTP ${code}）：$url" >&2
-      head -c 200 "$body_file" >&2; echo >&2
-      rm -f "$body_file"; return 1 ;;
-    404)
-      echo "${C_RED}[error]${C_RST} $label URL 不存在（HTTP 404）：$url —— 检查 BASE_URL" >&2
-      rm -f "$body_file"; return 1 ;;
-    400)
-      # 400 常见于模型名不存在或 body 校验失败
-      if grep -qE "model.*not.*found|invalid.*model|model_not_found" "$body_file" 2>/dev/null; then
-        echo "${C_RED}[error]${C_RST} $label 模型名 '$model' 无效（HTTP 400）" >&2
-        rm -f "$body_file"; return 1
-      fi
-      warn "$label HTTP 400（可能是参数格式问题，非通路错）：$(head -c 150 "$body_file")"
-      rm -f "$body_file"; return 0 ;;
-    *)
-      warn "$label 无法访问 ${url}（HTTP=${code}）$(head -c 100 "$body_file" 2>/dev/null)"
-      rm -f "$body_file"; return 1 ;;
-  esac
-}
-
-# check_llm_group <label> <base_url> <api_key> <model> <protocol>
-check_llm_group() {
-  local label="$1" base="$2" key="$3" model="$4" proto="${5:-openai}"
-  info "检查 $label 通路（协议=${proto}，base=${base}，model=${model}）..."
-  case "$proto" in
-    anthropic) check_llm_anthropic "$label" "$base" "$key" "$model" ;;
-    *)         check_llm_openai    "$label" "$base" "$key" "$model" ;;
-  esac
-}
+# LLM checks are shared with start-all.sh through _lib.sh.
 
 # 容器内 curl 验证（可选，容器已运行时才做）
 check_llm_from_container() {
@@ -145,28 +46,30 @@ check_llm_from_container() {
     return 0  # 容器没跑，跳过（非错误）
   fi
   info "  ↳ 从容器 $container 内部再打一次 $label..."
-  # 关注点是"网络可达"：只要能拿到任何 HTTP 状态码就算通；000 才算不可达。
+  # HTTP 状态与 curl/docker 退出码分开判断，避免把不完整的响应判为成功。
   # auth 错在宿主机侧已经报过，容器内不再重复触发 error。
-  local url code
+  local url code curl_rc=0
   case "$proto" in
     anthropic)
-      base="${base%/}"; [[ "$base" == */messages ]] || base="${base}/v1/messages"
-      url="$base"
-      code=$($DOCKER exec "$container" curl -sS -o /dev/null --max-time 15 \
+      base="${base%/}"
+      if [[ "$base" == */messages ]]; then url="$base"
+      elif [[ "$base" == */v1 ]]; then url="${base}/messages"
+      else url="${base}/v1/messages"; fi
+      code=$($DOCKER exec "$container" curl -q -sS -o /dev/null --max-time 15 \
          -w "%{http_code}" -X POST -H "Content-Type: application/json" \
          -H "x-api-key: $key" -H "anthropic-version: 2023-06-01" \
          -d "{\"model\":\"$model\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}" \
-         "$url" 2>/dev/null || echo "000")
+         "$url" 2>/dev/null) || curl_rc=$?
       ;;
     *)
-      base="${base%/}"; base="${base%/v1}"
-      url="${base}/v1/models"
-      code=$($DOCKER exec "$container" curl -sS -o /dev/null --max-time 10 \
-         -w "%{http_code}" -H "Authorization: Bearer $key" "$url" 2>/dev/null || echo "000")
+      base="${base%/}"; base="${base%/messages}"; base="${base%/chat/completions}"
+      url="${base}/models"
+      code=$($DOCKER exec "$container" curl -q -sS -o /dev/null --max-time 10 \
+         -w "%{http_code}" -H "Authorization: Bearer $key" "$url" 2>/dev/null) || curl_rc=$?
       ;;
   esac
-  if [[ "$code" == "000" ]]; then
-    warn "  容器 ${container} 无法访问 ${url}（网络隔离 / DNS 失败）"
+  if (( curl_rc != 0 )) || [[ ! "$code" =~ ^[1-5][0-9][0-9]$ ]]; then
+    warn "  容器 ${container} 请求未完成 ${url}（HTTP=${code:-000}，exec/curl_exit=${curl_rc}）"
     WARNS=$((WARNS+1))
   else
     ok "  容器 ${container} → $label 网络可达（HTTP ${code}）"

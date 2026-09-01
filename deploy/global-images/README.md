@@ -2,6 +2,8 @@
 
 全局三件套镜像的本地拉起脚本 —— `memory-core` + `memory-hub` + `proxy`，可各自独立运行，也能一条命令全部启动。
 
+当前项目模型配置为 **GLM-5.2 对话 + BGE-M3 独立 Embedding**。先在 `.env` 手动填写三项模型密钥，再运行 `node check-models.mjs --live`。完整设置、Windows 挂载修正与生效步骤见 [模型配置教程](../../docs/MODEL_CONFIGURATION_CN.md)。
+
 ## 组件与端口
 
 | 组件 | 容器名 | 镜像（Docker Hub 公开） | 宿主机端口 | 用途 |
@@ -66,11 +68,16 @@ cd TencentDB-Agent-Memory/deploy/global-images
 失败例子：
 
 ```
-[error] memory 组 API key 无效（HTTP 401）：https://api.deepseek.com/v1/models
-{"error":{"message":"Authentication Fails, Your api key: ****abcd is invalid",...}}
+[warn] memory 组 API key 无效（HTTP 401）：https://api.deepseek.com/v1/models
 ```
 
-—— API key 错、URL 错、模型名错都会在启动前拦下，不会等到 wiki ingest / chat 时才 401。
+`/models` 检查不等同于实际生成成功，也不能保证模型可用。填写密钥后，可以运行 `node check-models.mjs --live` 验证配置的对话与 Embedding 接口（会调用真实模型）。
+
+如果旧脚本显示 `HTTP=200000`，这是 HTTP 状态 `200` 与 curl 失败分支输出的 `000` 被拼接，并不是有效状态码。现在启动与验证脚本共用 `_lib.sh`，分别记录 HTTP 状态和 curl 退出码；Git Bash 下会将临时响应文件转换为 Windows 路径，避免禁用 Docker 路径转换后 curl 写入 `/tmp` 失败。
+
+修复后如果仍失败，日志会显示 `HTTP=200，curl_exit=23`（写入失败）、`curl_exit=28`（超时）等具体原因；HTTP 200 后传输失败仍会判为失败。日志不打印上游响应正文，避免网关回显密钥。
+
+修改脚本后重新运行 `./verify.sh` 即可，无须为检查本身重启容器。离线回归测试可运行 `node test-llm-preflight.mjs`，仅访问本机临时 HTTP 服务，不读取 `.env`，不调用真实 Docker 或模型服务。
 
 启动完成后：
 
@@ -86,13 +93,13 @@ cd TencentDB-Agent-Memory/deploy/global-images
 
 ### memory 组（memory-core + memory-hub 使用）
 
-内核记忆 embed/summarize、knowledge 的 wiki ingest / 总结走这组配置。
+内核记忆抽取/总结、knowledge 的 wiki ingest / 总结走这组对话配置。向量生成使用独立的 `MEMORY_EMBEDDING_*` 配置，不复用对话模型。
 
 | 变量 | 说明 | 示例 |
 |---|---|---|
-| `MEMORY_LLM_BASE_URL` | OpenAI 兼容 base URL | `https://api.deepseek.com/v1` |
+| `MEMORY_LLM_BASE_URL` | OpenAI 兼容 base URL | `http://10.128.202.100:3010/v1` |
 | `MEMORY_LLM_API_KEY` | 上述端点的 API Key | `sk-xxxxxxxx` |
-| `MEMORY_LLM_MODEL` | 模型 ID | `deepseek-chat` |
+| `MEMORY_LLM_MODEL` | 模型 ID | `glm-5.2` |
 | `MEMORY_LLM_PROTOCOL` | `openai` 或 `anthropic`，默认 `openai` | `openai` |
 
 ### proxy 组（proxy 使用）
@@ -101,11 +108,11 @@ proxy 接到用户请求后转发到这组端点。
 
 | 变量 | 说明 | 示例 |
 |---|---|---|
-| `PROXY_UPSTREAM_URL` | 转发目标 base URL | `https://api.deepseek.com/v1` |
+| `PROXY_UPSTREAM_URL` | 转发目标 base URL | `http://10.128.202.100:3010/v1` |
 | `PROXY_UPSTREAM_API_KEY` | 转发用 API Key | `sk-xxxxxxxx` |
-| `PROXY_UPSTREAM_MODEL` | 面向用户的模型 ID | `deepseek-chat` |
+| `PROXY_UPSTREAM_MODEL` | 面向用户的模型 ID | `glm-5.2` |
 
-> 两组可以填相同值（都指向同一个 LLM），也可以完全不同：例如 memory 组用便宜模型做 embedding，proxy 组用强模型做主对话。
+> 两组可以使用同一个对话模型，也可以不同。Embedding 单独配置 `MEMORY_EMBEDDING_PROVIDER/BASE_URL/API_KEY/MODEL/DIMENSIONS/SEND_DIMENSIONS`；当前为 `openai/bge-m3/1024/false`。`PROXY_UPSTREAM_MODEL` 不会强制改写客户端请求的模型名，客户端也应设置 `glm-5.2`。
 
 参数缺失时脚本会**在启动前一次性列出所有缺失项**并 `exit 1`，不会跑到一半才失败。
 

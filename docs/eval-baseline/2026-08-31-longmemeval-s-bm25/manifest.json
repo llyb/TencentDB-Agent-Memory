@@ -1,0 +1,47 @@
+{
+  "run_id": "longmemeval-2026-08-31T06-26-05-642Z-3ef6c67c",
+  "files": {
+    "config.resolved.json": {
+      "bytes": 11401,
+      "sha256": "ccc387edf11a770c498bc974b688602199db3674375c918df9c95b56994dce98"
+    },
+    "record-map.jsonl.gz": {
+      "bytes": 4675725,
+      "sha256": "663f8f8e723c33714d464c285f1f114432da2c0b6003d2dff8d3fb244875a3bb",
+      "uncompressed_bytes": 31753236,
+      "uncompressed_sha256": "c7c96560fcfc3a2ec21d2ab7f9f50c9ae509ed709eadcbd5cc903891d11abe9a"
+    },
+    "report.md": {
+      "bytes": 4643,
+      "sha256": "bd60fb97c0978926e9d2e6b358b626b71f814c3940ff7ce3465becfc585822a0"
+    },
+    "results.jsonl": {
+      "bytes": 2120017,
+      "sha256": "72fbd3afec50b47a6b5c43c271195ce573e326a95cf7cd11efa21bc14a52a6c0"
+    },
+    "run.json": {
+      "bytes": 888,
+      "sha256": "60dcc9bf7fde37bf701a17285588e0085d4806ddceb382199295582c328c0f04"
+    },
+    "samples.jsonl": {
+      "bytes": 184189,
+      "sha256": "84d9e6616787fdcec7580b221a7f1ac3e3ef884ee17a1b3d8fb6a147cc8831e3"
+    },
+    "source-files.json": {
+      "bytes": 30246,
+      "sha256": "c981c90359334f5995339ab83c6e15eadc7c33d5808af19306c7a2d99350aaf7"
+    },
+    "summary.json": {
+      "bytes": 26916,
+      "sha256": "202192784f182ebf1c3199e8470a0dd3f52149843d11b2adf2ba3a0469320fa3"
+    },
+    "trace.jsonl": {
+      "bytes": 1205230,
+      "sha256": "8a02be11041ba25ef292f38b8eab7670b7e6b302d3f5d4c32d8f850006cab90e"
+    },
+    "upstream-verification.json": {
+      "bytes": 1094,
+      "sha256": "1d394152c1d30a1295255bb53731cea9f65ca1b539f7fe7ee1fee665a7984a5f"
+    }
+  }
+}

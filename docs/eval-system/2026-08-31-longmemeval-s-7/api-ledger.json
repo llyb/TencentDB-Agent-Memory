@@ -1,0 +1,29 @@
+{
+  "scope": "Recorded evaluation calls including development pilots; excludes separate connectivity probes and unlogged interrupted in-flight calls. No inferred billing.",
+  "runs": [
+    {
+      "run": "system-2026-08-31T10-35-00-558Z-d7730d",
+      "requests_recorded": 2,
+      "failed": 0,
+      "reported_tokens": 16280
+    },
+    {
+      "run": "system-2026-08-31T10-40-01-421Z-2b076a",
+      "requests_recorded": 1158,
+      "failed": 2,
+      "reported_tokens": 4150784
+    },
+    {
+      "run": "system-2026-08-31T10-58-11-007Z-129bd7",
+      "requests_recorded": 55,
+      "failed": 0,
+      "reported_tokens": 143491
+    },
+    {
+      "run": "system-2026-08-31T11-25-49-703Z-c1edbd",
+      "requests_recorded": 390,
+      "failed": 6,
+      "reported_tokens": 963528
+    }
+  ]
+}

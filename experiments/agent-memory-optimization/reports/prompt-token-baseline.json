@@ -1,0 +1,10 @@
+{
+  "tokenizer": "o200k_base",
+  "baseline_ref": "50f33f5",
+  "fixture": "one code-graph, one wiki, one listed skill, read-only skill tools",
+  "p0_injected_tokens": 4468,
+  "p3_injected_tokens": 1716,
+  "tokens_saved": 2752,
+  "reduction_rate": 0.6159355416293644,
+  "note": "Static representative fixture. Live evaluation must record provider-reported prompt tokens per case."
+}

@@ -15,12 +15,10 @@ import type {
   InjectionPoint,
 } from "./types.js";
 import {
-  appendTextToMessage,
   getLastUserMessage,
   getMessageText,
   getSystemMessage,
   isFirstTurn,
-  prependTextToMessage,
 } from "./context.js";
 import type { HookCacheRepo } from "../db/hookCacheRepo.js";
 import type { InjectionObserver, HookResult } from "./observer.js";
@@ -283,9 +281,15 @@ export class InjectionPipeline {
 
     if (strategy === "session_init") {
       const cached = await this.hookCacheRepo.get(spaceId, userId, agentSource, sessionId, hook.id);
-      if (cached !== null) {
+      if (cached !== null && isCacheVersionCompatible(hook, cached)) {
         console.log(`[hook-cache] session=${sessionId} hook=${hook.id} hit blocks=${cached.length}`);
         return cached;
+      }
+      if (cached !== null) {
+        console.log(
+          `[hook-cache] session=${sessionId} hook=${hook.id} stale `
+            + `(expected=${hook.cacheVersion ?? "unversioned"})`,
+        );
       }
 
       // Cache miss safety net. This is expected on the very first request of
@@ -299,7 +303,7 @@ export class InjectionPipeline {
       // self-heal put**。因为 fork 请求的目的是复用 MAIN 已建的 cache 命中；如果
       // miss 时 self-heal，写入内容可能跟 MAIN 那次不 byte-level 一致，反而破坏
       // 后续主对话的 cache 语义。
-      const fresh = await hook.execute(ctx);
+      const fresh = stampCacheVersion(hook, await hook.execute(ctx));
       const readOnly = ctx.metadata.readOnly === true;
       if (fresh.length > 0 && !readOnly) {
         try {
@@ -320,8 +324,9 @@ export class InjectionPipeline {
     }
 
     // strategy === "hybrid"
-    const cached = await this.hookCacheRepo.get(spaceId, userId, agentSource, sessionId, hook.id) ?? [];
-    const fresh = await hook.execute(ctx);
+    const rawCached = await this.hookCacheRepo.get(spaceId, userId, agentSource, sessionId, hook.id) ?? [];
+    const cached = isCacheVersionCompatible(hook, rawCached) ? rawCached : [];
+    const fresh = stampCacheVersion(hook, await hook.execute(ctx));
     if (cached.length === 0) return fresh;
     if (fresh.length === 0) return cached;
     return mergeBlocks(cached, fresh);
@@ -355,18 +360,28 @@ export class InjectionPipeline {
       if (sysMsg) {
         const key = hook.anchor.rawKey
           ?? (hook.anchor.slot ? profile.resolveSlot(hook.anchor.slot) : null);
-        const currentText = getMessageText(sysMsg);
-        const segments = profile.parse(currentText);
-        if (key && segments.some((s) => s.key === key)) {
-          const newSegments = profile.applyAnchor(
-            segments,
-            { key, relation: hook.anchor.relation },
-            text,
-          );
-          // The system message text is authoritative — replace its blocks with
-          // the rebuilt prompt so later hooks see the updated text.
-          sysMsg.blocks = [{ type: "text", content: profile.rebuild(newSegments) }];
-          return; // anchor hit — done
+        if (key) {
+          // Locate the structural anchor inside one concrete text block and
+          // update only that block. Rebuilding the concatenated system text
+          // used to collapse every block into one and silently discard
+          // provider metadata such as Anthropic `cache_control`.
+          for (let i = 0; i < sysMsg.blocks.length; i++) {
+            const original = sysMsg.blocks[i];
+            if (original.type !== "text") continue;
+            const segments = profile.parse(original.content);
+            if (!segments.some((s) => s.key === key)) continue;
+            const newSegments = profile.applyAnchor(
+              segments,
+              { key, relation: hook.anchor.relation },
+              text,
+            );
+            sysMsg.blocks[i] = {
+              ...original,
+              content: profile.rebuild(newSegments),
+              metadata: original.metadata ? { ...original.metadata } : undefined,
+            };
+            return; // anchor hit — done
+          }
         }
         // Slot unresolved / structure missing → fall through to `point` (warn).
         console.warn(
@@ -392,24 +407,14 @@ export class InjectionPipeline {
       case "system.prefix": {
         const sysMsg = getSystemMessage(ctx);
         if (!sysMsg) break;
-        // Prepend text blocks at the beginning of system message
-        for (let i = blocks.length - 1; i >= 0; i--) {
-          if (blocks[i].type === "text") {
-            prependTextToMessage(sysMsg, blocks[i].content);
-          }
-        }
+        sysMsg.blocks.unshift(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
       case "system.suffix": {
         const sysMsg = getSystemMessage(ctx);
         if (!sysMsg) break;
-        // Append text blocks at the end of system message
-        for (const block of blocks) {
-          if (block.type === "text") {
-            appendTextToMessage(sysMsg, block.content);
-          }
-        }
+        sysMsg.blocks.push(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
@@ -424,11 +429,7 @@ export class InjectionPipeline {
         // 一致，跟 asset-reflection / tdai-tools 这些 suffix 类块的落位对齐。
         const sysMsg = getSystemMessage(ctx);
         if (!sysMsg) break;
-        for (const block of blocks) {
-          if (block.type === "text") {
-            appendTextToMessage(sysMsg, block.content);
-          }
-        }
+        sysMsg.blocks.push(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
@@ -437,33 +438,21 @@ export class InjectionPipeline {
         // Fall through to user.before behavior
         const lastUserMsg = getLastUserMessage(ctx);
         if (!lastUserMsg) break;
-        for (let i = blocks.length - 1; i >= 0; i--) {
-          if (blocks[i].type === "text") {
-            prependTextToMessage(lastUserMsg, blocks[i].content);
-          }
-        }
+        lastUserMsg.blocks.unshift(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
       case "user.before": {
         const lastUserMsg = getLastUserMessage(ctx);
         if (!lastUserMsg) break;
-        for (let i = blocks.length - 1; i >= 0; i--) {
-          if (blocks[i].type === "text") {
-            prependTextToMessage(lastUserMsg, blocks[i].content);
-          }
-        }
+        lastUserMsg.blocks.unshift(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
       case "user.after": {
         const lastUserMsg = getLastUserMessage(ctx);
         if (!lastUserMsg) break;
-        for (const block of blocks) {
-          if (block.type === "text") {
-            appendTextToMessage(lastUserMsg, block.content);
-          }
-        }
+        lastUserMsg.blocks.push(...blocks.filter((b) => b.type === "text").map(cloneBlock));
         break;
       }
 
@@ -510,6 +499,30 @@ function safeCall(fn: () => void): void {
   } catch {
     // observer errors are intentionally swallowed
   }
+}
+
+function cloneBlock(block: ContextBlock): ContextBlock {
+  return {
+    ...block,
+    metadata: block.metadata ? { ...block.metadata } : undefined,
+  };
+}
+
+function stampCacheVersion(hook: InjectionHook, blocks: ContextBlock[]): ContextBlock[] {
+  if (!hook.cacheVersion) return blocks;
+  return blocks.map((block) => ({
+    ...block,
+    metadata: {
+      ...(block.metadata ?? {}),
+      cacheVersion: hook.cacheVersion,
+    },
+  }));
+}
+
+function isCacheVersionCompatible(hook: InjectionHook, blocks: ContextBlock[]): boolean {
+  if (!hook.cacheVersion) return true;
+  return blocks.length > 0
+    && blocks.every((block) => block.metadata?.cacheVersion === hook.cacheVersion);
 }
 
 /**

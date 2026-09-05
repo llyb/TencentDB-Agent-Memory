@@ -59,25 +59,12 @@ export interface SkillInjectorConfig {
  * guidance regardless of which host renders the block.
  */
 const SKILL_LISTING_HEADER =
-  "## Skills (mandatory)\n"
-  + "Before replying, scan the skills below. If a skill matches or is even partially relevant "
-  + "to your task, you MUST load it by calling the `skill_view` skill-bridge tool "
-  + "(see the `<skill_tools>` block above for the exact curl recipe) and follow its instructions. "
-  + "Err on the side of loading — it is always better to have context you don't need "
-  + "than to miss critical steps, pitfalls, or established workflows. "
-  + "Skills contain specialized knowledge — API endpoints, tool-specific commands, "
-  + "and proven workflows that outperform general-purpose approaches. Load the skill "
-  + "even if you think you could handle the task with basic tools like web_search or terminal. "
-  + "Skills also encode the user's preferred approach, conventions, and quality standards "
-  + "for tasks like code review, planning, and testing — load them even for tasks you "
-  + "already know how to do, because the skill defines how it should be done here.\n"
-  + "If a skill has issues, fix it with the `skill_patch` skill-bridge tool.\n"
-  + "After difficult/iterative tasks, offer to save the approach as a new skill "
-  + "(`skill_create`). If a skill you loaded was missing steps, had wrong commands, "
-  + "or needed pitfalls you discovered, update it before finishing.\n";
+  "## Available cloud skills\n"
+  + "Scan names and descriptions. Call skill_view only when one clearly matches the requested "
+  + "workflow or required project convention. A shared word or partial relevance is not enough.";
 
 const SKILL_LISTING_FOOTER =
-  "\nOnly proceed without loading a skill if genuinely none are relevant to the task.";
+  "\nIf no item clearly matches, continue normally. Use skill_search only when the task explicitly needs a reusable team procedure that is not listed.";
 
 /**
  * Wrap the pre-rendered `<available_skills>` listing from plugin into a
@@ -93,11 +80,7 @@ const SKILL_LISTING_FOOTER =
 export function wrapAvailableSkillsBlock(listing: string): string {
   return [
     SKILL_LISTING_HEADER,
-    "以下是你（当前 agent）自带的云端 skill 列表。这些 skill 存储在你的 agent 名下，",
-    "优先使用它们完成任务。如果你觉得自带的 skill 不够，可以用 skill_search 工具",
-    "在团队的 skill 库中检索更多（跨 agent 共享）。",
-    "",
-    "**重要：这些 skill 存储在云端，不能使用 read_file / tool_use 直接访问，\n必须用 Bash 执行 curl 调用上方 <skill_tools> 块中的 skill-bridge 工具。**",
+    "These entries are cloud assets. Load them through the <skill_tools> curl endpoints, not local file tools.",
     "",
     listing,
     SKILL_LISTING_FOOTER,
@@ -157,6 +140,7 @@ export class SkillInjector implements InjectionHook {
   description = "Inject agent-owned cloud skills via /v3/skill/listing before <agent_skills>.";
   /** Listing result is stable for the session. */
   cacheStrategy: CacheStrategy = "session_init";
+  cacheVersion = "task-one-p3-v1";
 
   constructor(
     private config: SkillInjectorConfig,

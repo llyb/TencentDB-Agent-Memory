@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proxy tool-decision model run",
+  "type": "object",
+  "required": ["case_id", "did_call", "injected_tokens"],
+  "properties": {
+    "case_id": { "type": "string", "minLength": 1 },
+    "did_call": { "type": "boolean" },
+    "actual_first_family": { "enum": ["memory", "skill", "knowledge", null] },
+    "actual_first_tool": { "type": ["string", "null"] },
+    "injected_tokens": { "type": "integer", "minimum": 0 },
+    "prompt_version": { "type": "string" },
+    "model": { "type": "string" },
+    "seed": { "type": ["integer", "string"] }
+  },
+  "if": { "properties": { "did_call": { "const": true } } },
+  "then": { "required": ["actual_first_family"] },
+  "additionalProperties": true
+}

@@ -78,6 +78,12 @@ export { TdaiProfileMemoryInjector } from "./injectors/tdai-profile-memory-injec
 export { TdaiToolsInjector } from "./injectors/tdai-tools-injector.js";
 export { KnowledgeToolsInjector } from "./injectors/knowledge-tools-injector.js";
 export { AssetReflectionInjector, renderAssetReflectionBlock } from "./injectors/asset-reflection-injector.js";
+export {
+  AssetToolRoutingInjector,
+  renderAssetToolRoutingBlock,
+  ASSET_TOOL_PROMPT_VERSION,
+} from "./injectors/asset-tool-routing-injector.js";
+export type { AssetToolFamily } from "./injectors/asset-tool-routing-injector.js";
 
 // CodeBuddy
 export { isCodeBuddyPrompt, parseCodeBuddySystemPrompt } from "./agents/codebuddy/parser.js";
@@ -112,6 +118,7 @@ import { TdaiProfileMemoryInjector } from "./injectors/tdai-profile-memory-injec
 import { TdaiToolsInjector } from "./injectors/tdai-tools-injector.js";
 import { KnowledgeToolsInjector } from "./injectors/knowledge-tools-injector.js";
 import { AssetReflectionInjector } from "./injectors/asset-reflection-injector.js";
+import { AssetToolRoutingInjector, type AssetToolFamily } from "./injectors/asset-tool-routing-injector.js";
 import type { ProtocolAdapter } from "./adapters/interface.js";
 import type { AgentProfile } from "./agents/interface.js";
 import { CodeBuddyProfile } from "./agents/codebuddy/profile.js";
@@ -353,6 +360,17 @@ function buildPipelineBundle(config: ProxyConfig): PipelineBundle {
     if (typeof proxyBaseUrl !== "undefined") {
       registry.register(new TdaiToolsInjector({ proxyBaseUrl }));
     }
+  }
+
+  // Shared routing policy is static and lands at system.prefix. It is kept in
+  // one block so every asset family uses the same positive/negative boundary.
+  const registeredAssetIds = new Set(registry.getAll().map((h) => h.id));
+  const routingFamilies: AssetToolFamily[] = [];
+  if (registeredAssetIds.has("tdai-memory-tools-injector")) routingFamilies.push("memory");
+  if (registeredAssetIds.has("skill-tools-injector")) routingFamilies.push("skill");
+  if (registeredAssetIds.has("knowledge-tools-injector")) routingFamilies.push("knowledge");
+  if (routingFamilies.length > 0) {
+    registry.register(new AssetToolRoutingInjector(routingFamilies));
   }
 
   // ── Asset Reflection (内部效果评估) ─────────────────────────────────────

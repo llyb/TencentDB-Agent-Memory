@@ -347,6 +347,12 @@ export interface InjectionHook {
    */
   cacheStrategy?: CacheStrategy;
   /**
+   * Version of the rendered cache payload. When set, the pipeline rejects
+   * session cache entries produced by an older prompt implementation and
+   * refreshes them before injection.
+   */
+  cacheVersion?: string;
+  /**
    * Optional prewarm hook. Called once at session_init when
    * `cacheStrategy ∈ {"session_init", "hybrid"}`. Returns the blocks to be
    * persisted into the per-session cache. If omitted or throwing, the hook

@@ -150,7 +150,14 @@ export async function prewarmAll(
         totalBudget,
         `hook=${hook.id}`,
       );
-      const arr: ContextBlock[] = Array.isArray(blocks) ? blocks : [];
+      const arr: ContextBlock[] = Array.isArray(blocks)
+        ? blocks.map((block) => hook.cacheVersion
+          ? {
+              ...block,
+              metadata: { ...(block.metadata ?? {}), cacheVersion: hook.cacheVersion },
+            }
+          : block)
+        : [];
       if (arr.length === 0) {
         return { hookId: hook.id, status: "skipped" as const, reason: "empty blocks" };
       }

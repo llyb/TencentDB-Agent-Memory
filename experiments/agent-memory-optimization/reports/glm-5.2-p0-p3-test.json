@@ -1,0 +1,490 @@
+{
+  "model": "glm-5.2",
+  "temperature": 0,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "split": "test",
+  "cases_per_seed": 100,
+  "token_control": {
+    "file": "glm-5.2-pnone-test-seed1.jsonl",
+    "provider_prompt_tokens_average": 230.22,
+    "purpose": "Subtract common system, query, and Bash tool-schema tokens; not used for behavior metrics."
+  },
+  "versions": {
+    "p0": {
+      "seeds": [
+        {
+          "seed": 1,
+          "file": "glm-5.2-p0-test-seed1.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 1,
+            "false_call_rate": 0.225,
+            "tool_selection_accuracy": 0.9166666666666666,
+            "injected_token_count": {
+              "total": 446800,
+              "average_per_case": 4468
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 60
+            }
+          }
+        },
+        {
+          "seed": 2,
+          "file": "glm-5.2-p0-test-seed2.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 1,
+            "false_call_rate": 0.175,
+            "tool_selection_accuracy": 0.8833333333333333,
+            "injected_token_count": {
+              "total": 446800,
+              "average_per_case": 4468
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 60
+            }
+          }
+        },
+        {
+          "seed": 3,
+          "file": "glm-5.2-p0-test-seed3.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 1,
+            "false_call_rate": 0.125,
+            "tool_selection_accuracy": 0.95,
+            "injected_token_count": {
+              "total": 446800,
+              "average_per_case": 4468
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 60
+            }
+          }
+        }
+      ],
+      "pooled": {
+        "case_count": 300,
+        "effective_call_rate": 1,
+        "false_call_rate": 0.175,
+        "tool_selection_accuracy": 0.9166666666666666,
+        "injected_token_count": {
+          "total": 1340400,
+          "average_per_case": 4468
+        },
+        "denominators": {
+          "should_call": 180,
+          "should_not_call": 120,
+          "positive_calls": 180
+        }
+      },
+      "provider_prompt_tokens_average": 4476.22,
+      "provider_injected_tokens_average": 4246,
+      "failures": [
+        {
+          "case_id": "test-skill-001",
+          "seed": 1,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我先查一下记忆里是否有关于\"灰度验证标准操作\"的约定，同时加载 deploy skill（发布相关操作）。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"灰度验证标准操作 canary release 发布流程\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-005",
+          "seed": 1,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我来按项目流程执行。首先需要确认项目里关于\"接口弃用\"的既有约定和文档，不自行发明步骤。我会同时查记忆、查团队 skill、查 wiki 设计文档。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"接口弃用 API deprecation 流程 约定\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-009",
+          "seed": 1,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我来查找服务扩容操作规程，同时加载 deploy skill（与发布/扩容服务相关）。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"服务扩容操作规程 scaling procedure\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-011",
+          "seed": 1,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先了解仓库的基准测试规范。让我同时查记忆、代码索引和设计文档，确认既定流程。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"基准测试 benchmark 规范 步骤 约定\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-019",
+          "seed": 1,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先查清楚团队是否有\"兼容性验收流程\"的约定，而不是自己发明步骤。我会同时查记忆、Skill 库和 Wiki。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"兼容性验收流程 compatibility acceptance\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-007",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解项目结构和现有 API，然后为它们编写示例。先并行获取 code-graph 工具清单和本地项目结构。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-008",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解项目结构和现有 API，然后为它们编写示例。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-009",
+          "seed": 1,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "我先查一下记忆中是否有相关上下文，同时探索一下当前代码库的结构。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"条件分支 简化 当前输入 本地代码\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-017",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解项目结构和 SQL 相关代码，然后进行索引优化。\n\n**Step 1: 获取 code-graph 工具清单 + 搜索 SQL 相关文件**",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-019",
+          "seed": 1,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/conversation/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"函数 边界检查 boundary check\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-025",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我先了解项目结构，找到\"本地命令\"相关的代码。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-033",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-037",
+          "seed": 1,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"无效配置项 移除配置 invalid config\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-039",
+          "seed": 1,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我将首先了解项目结构并找到解析器代码。让我探索一下代码库。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-skill-001",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我先查记忆中是否有关于\"灰度验证标准操作\"的历史记录，同时加载 deploy skill（与发布/灰度相关）。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"灰度验证标准操作 发布流程\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-006",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "knowledge",
+          "assistant_text": "我来从多个渠道查找团队关于接口弃用的流程：wiki 设计文档、团队 skill 库、以及记忆库。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"wiki-1\"}'"
+        },
+        {
+          "case_id": "test-skill-007",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我先查一下团队记忆和 skill 库中是否有\"依赖漏洞处置\"相关的约定步骤，不自行发明。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"依赖漏洞处置步骤 dependency vulnerability 处理流程\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-009",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我先查一下记忆中是否有关于\"服务扩容\"的约定/规程，同时加载自带的 `deploy` skill（与发布/扩容相关）。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"服务扩容操作规程 scale 扩容步骤\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-013",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先查记忆和可用 skill，确认团队是否有既定的「应急演练流程」，而不是自己发明步骤。让我同时检索记忆和 skill 库。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"应急演练流程 emergency drill 故障演练 团队流程\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-016",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我来帮你找到团队的项目变更审批流程。我会同时从几个方向查找：记忆库、团队知识库（wiki）、以及已有的 deploy skill。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"项目变更审批流程 change approval process 审批步骤\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-019",
+          "seed": 2,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先查找团队是否有\"兼容性验收流程\"相关的约定或 skill，而不是自行发明步骤。让我同时查记忆和 skill 库。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"兼容性验收流程 compatibility acceptance 验收标准\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-007",
+          "seed": 2,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我先了解仓库结构和现有 API 代码，然后为它们编写示例。让我同时启动几个探索任务。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-017",
+          "seed": 2,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解项目结构和 SQL 相关代码，然后进行索引优化。\n\n## 第一步：探索项目结构，定位 SQL 相关代码",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-021",
+          "seed": 2,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "我先查一下记忆中是否有相关上下文，同时看一下本地代码结构。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"同步代码改成 Promise 同步转异步\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-026",
+          "seed": 2,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解仓库结构，找到本地命令相关的代码。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-027",
+          "seed": 2,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"注释 comment 措辞 项目约定 代码风格\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-033",
+          "seed": 2,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-039",
+          "seed": 2,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-skill-005",
+          "seed": 3,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先确认项目里是否有既定的「接口弃用流程」。我会同时查记忆、wiki 设计文档和 skill 库，确保不遗漏。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"接口弃用流程 API deprecation 流程 步骤\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-013",
+          "seed": 3,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我需要先查记忆和可用 skill，确认团队应急演练流程，不自行发明步骤。让我同时检索记忆和查看相关 skill。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"应急演练流程 emergency drill 故障演练 团队流程\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-skill-018",
+          "seed": 3,
+          "expected": "skill",
+          "actual": "memory",
+          "assistant_text": "我来帮你查找团队的服务数据修复 SOP。我会同时从记忆、Skill 库和知识库 Wiki 三个方向搜索。",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"服务数据修复 SOP 流程 数据修复\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-008",
+          "seed": 3,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我先了解项目结构，找到需要写示例的 API。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-021",
+          "seed": 3,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"同步代码改成 Promise 异步重构\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-025",
+          "seed": 3,
+          "expected": "none",
+          "actual": "memory",
+          "assistant_text": "",
+          "actual_first_tool": "curl -sfk -X POST http://proxy/memory-bridge/v3/atomic/search \\\n  -H 'Content-Type: application/json' -H 'x-tdai-service-id: space-1' -H 'x-conversation-id: session-1' \\\n  -d '{\"query\": \"本地命令 参数 local command\", \"limit\": 5}'"
+        },
+        {
+          "case_id": "test-none-026",
+          "seed": 3,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我来先了解项目结构，找到\"本地命令\"相关的代码。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list -H 'content-type: application/json' -H 'x-tdai-service-id: space-1' -d '{\"knowledge_id\":\"kg-1\"}'"
+        },
+        {
+          "case_id": "test-none-039",
+          "seed": 3,
+          "expected": "none",
+          "actual": "knowledge",
+          "assistant_text": "我将首先了解项目结构并找到解析器代码。让我使用代码图来探索代码库。",
+          "actual_first_tool": "curl -sSk -X POST http://knowledge/v3/tools/list \\\n  -H 'content-type: application/json' \\\n  -H 'x-tdai-service-id: space-1' \\\n  -d '{\"knowledge_id\":\"kg-1\"}'"
+        }
+      ]
+    },
+    "p3": {
+      "seeds": [
+        {
+          "seed": 1,
+          "file": "glm-5.2-p3-test-seed1.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 1,
+            "false_call_rate": 0,
+            "tool_selection_accuracy": 1,
+            "injected_token_count": {
+              "total": 171600,
+              "average_per_case": 1716
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 60
+            }
+          }
+        },
+        {
+          "seed": 2,
+          "file": "glm-5.2-p3-test-seed2.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 0.9833333333333333,
+            "false_call_rate": 0,
+            "tool_selection_accuracy": 1,
+            "injected_token_count": {
+              "total": 171600,
+              "average_per_case": 1716
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 59
+            }
+          }
+        },
+        {
+          "seed": 3,
+          "file": "glm-5.2-p3-test-seed3.jsonl",
+          "metrics": {
+            "case_count": 100,
+            "effective_call_rate": 0.9666666666666667,
+            "false_call_rate": 0,
+            "tool_selection_accuracy": 1,
+            "injected_token_count": {
+              "total": 171600,
+              "average_per_case": 1716
+            },
+            "denominators": {
+              "should_call": 60,
+              "should_not_call": 40,
+              "positive_calls": 58
+            }
+          }
+        }
+      ],
+      "pooled": {
+        "case_count": 300,
+        "effective_call_rate": 0.9833333333333333,
+        "false_call_rate": 0,
+        "tool_selection_accuracy": 1,
+        "injected_token_count": {
+          "total": 514800,
+          "average_per_case": 1716
+        },
+        "denominators": {
+          "should_call": 180,
+          "should_not_call": 120,
+          "positive_calls": 177
+        }
+      },
+      "provider_prompt_tokens_average": 1924.22,
+      "provider_injected_tokens_average": 1694,
+      "failures": [
+        {
+          "case_id": "test-skill-011",
+          "seed": 2,
+          "expected": "skill",
+          "actual": null,
+          "assistant_text": "我先检查本地仓库结构，同时搜索是否有相关的基准测试技能和知识库文档。",
+          "actual_first_tool": null
+        },
+        {
+          "case_id": "test-skill-015",
+          "seed": 3,
+          "expected": "skill",
+          "actual": null,
+          "assistant_text": "我来查找项目中关于变更审批的既定步骤。我会同时检查团队技能库和工程知识库，确保不遗漏已文档化的流程。",
+          "actual_first_tool": null
+        },
+        {
+          "case_id": "test-knowledge-014",
+          "seed": 3,
+          "expected": "knowledge",
+          "actual": null,
+          "assistant_text": "好的，用户需要跨文件架构和设计资料来确认一致性机制的设计原因。这同时匹配 **code-graph**（跨文件架构/依赖",
+          "actual_first_tool": null
+        }
+      ]
+    }
+  }
+}

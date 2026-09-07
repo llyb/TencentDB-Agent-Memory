@@ -1,0 +1,82 @@
+[
+  {
+    "id": "skl-c6d1df79ecc4",
+    "name": "closest-pair-via-sorting",
+    "description": "Applies when you need to check if any two elements in a list are within a threshold distance, or find the minimum/maximum difference between any pair of elements.",
+    "content": "Method: 1) Sort the collection so the closest pair must be adjacent. 2) Iterate adjacent pairs only (i from 0 to len-2). 3) Compute difference between element[i+1] and element[i]. 4) Return early (True) if difference < threshold, or track the global min/max difference. This reduces O(n^2) all-pairs comparison to O(n log n). Edge cases: empty or single-element list has no pairs -> return False (or +inf for min-diff). Duplicates yield difference 0. For floats, direct < comparison is fine; use abs diff if order-agnostic. Validation: ensure input is sortable and has length >= 2 before looping; guard range(len-1) to avoid index errors.",
+    "source_task_id": "HumanEval/0",
+    "sequence_index": 0
+  },
+  {
+    "id": "skl-c574087c6280",
+    "name": "dispersion-around-center",
+    "description": "When computing a dispersion statistic (mean absolute deviation, etc.) that measures spread of data around a central point such as the mean.",
+    "content": "1. Guard against empty input by returning a neutral value (e.g., 0.0) to avoid division by zero. 2. Compute the center point (mean = sum(data) / len(data)). 3. Compute per-element absolute deviations |x - center|. 4. Aggregate by averaging: sum(deviations) / len(data). Edge cases: empty list returns 0.0; single-element list yields 0.0 deviation; floating point means are fine. Validation: ensure input is a sequence of numbers; length > 0 before division.",
+    "source_task_id": "HumanEval/4",
+    "sequence_index": 2
+  },
+  {
+    "id": "skl-94869e0bb39d",
+    "name": "track-nesting-depth",
+    "description": "When you need to find the maximum nesting depth of paired delimiters (parentheses, brackets, tags, etc.) in a string or across multiple space-separated groups.",
+    "content": "Method: 1) If multiple groups, split the input by the separator (e.g., spaces). 2) For each group, initialize current_depth=0 and max_depth=0. 3) Iterate character by character: on an opening delimiter increment current_depth and update max_depth=max(max_depth, current_depth); on a closing delimiter decrement current_depth. 4) Collect max_depth per group into a list. Edge cases: empty/blank groups yield depth 0; unbalanced delimiters still produce a max from the highest point reached; non-delimiter characters are ignored. Validation: after processing a group, current_depth should be 0 for well-formed input—optionally assert or flag otherwise.",
+    "source_task_id": "HumanEval/6",
+    "sequence_index": 3
+  },
+  {
+    "id": "skl-18a18d2afc63",
+    "name": "aggregate-identity-initialization",
+    "description": "Applies when computing aggregates (sum, product, etc.) over a collection, especially when handling empty collections.",
+    "content": "1. Identify the mathematical identity element for the aggregate operation (e.g., 0 for sum, 1 for product).\n2. Initialize the accumulator variable with this identity element.\n3. Iterate through the collection, applying the operation to update the accumulator.\n4. Edge cases: An empty collection will naturally return the identity element, which is the mathematically correct result (e.g., empty sum = 0, empty product = 1).\n5. Validation: Ensure the initial value does not corrupt the result for non-empty collections (e.g., initializing a product to 0 will always yield 0).",
+    "source_task_id": "HumanEval/8",
+    "sequence_index": 4
+  },
+  {
+    "id": "skl-66a0110abcb1",
+    "name": "shortest-palindrome-from-prefix",
+    "description": "When you need to construct the shortest palindrome that begins with a given string by finding the longest palindromic suffix and appending the reversed prefix",
+    "content": "1. Iterate i from 0 to len(string)-1, checking if string[i:] is a palindrome (string == string[::-1]). 2. At the first i where the suffix is a palindrome, return string + string[:i][::-1] (original string plus the reverse of the prefix before the palindromic suffix). 3. Edge case: empty string returns empty string. 4. Validation: the result must start with the original string and must itself be a palindrome.",
+    "source_task_id": "HumanEval/10",
+    "sequence_index": 5
+  },
+  {
+    "id": "skl-22837ae8cd98",
+    "name": "find-extremum-by-key",
+    "description": "Applies when you need to find the min/max element in a collection based on a derived property (length, sum, count, etc.), especially when ties must resolve to the first occurrence.",
+    "content": "1. Guard for empty input first (return None or a sentinel) since max/min on empty raises ValueError. 2. Use max(iterable, key=fn) or min(iterable, key=fn) where fn extracts the comparison property (e.g., len, abs, lambda). 3. Rely on Python's stable behavior: max/min return the FIRST element achieving the extremum when there are ties—no need for manual tie-breaking logic. 4. For objects needing a custom property, use key=attrgetter('name') or key=lambda x: (primary, secondary) for multi-criteria ordering. Edge cases: empty collection (guard explicitly), single element (returned as-is), all-equal elements (returns first). Validate that key function is deterministic and does not mutate the input.",
+    "source_task_id": "HumanEval/12",
+    "sequence_index": 6
+  },
+  {
+    "id": "skl-c73a4e36586c",
+    "name": "generate-all-prefixes",
+    "description": "when you need to enumerate all prefixes of a string (or any sliceable sequence) ordered from shortest to longest",
+    "content": "Method:\n1. Use a list comprehension over a range of lengths.\n2. Iterate i from 1 to len(seq)+1 (use range(1, len(seq)+1) so the upper bound is inclusive).\n3. For each i, take seq[:i] to obtain the prefix of length i.\n4. The result is naturally ordered shortest-to-longest because i increases.\n\nEdge cases:\n- Empty input: range(1, 1) is empty, so the result is [] (no non-empty prefixes).\n- Single-element input: returns a one-element list containing the full input.\n- If empty-string prefix is also desired, start range at 0 instead of 1.\n\nValidation:\n- Input must support slicing (str, list, tuple); otherwise a TypeError will be raised.\n- For strings, prefixes are substrings; for lists/tuples, prefixes are sub-sequences.",
+    "source_task_id": "HumanEval/14",
+    "sequence_index": 7
+  },
+  {
+    "id": "skl-6b514263fa50",
+    "name": "count-overlapping-substring",
+    "description": "Applies when you need to count how many times a substring appears in a string, including overlapping occurrences (e.g., 'aa' appears 3 times in 'aaaa').",
+    "content": "Method:\n1. Guard against empty substring (return 0 to avoid infinite loop).\n2. Initialize count=0 and start=0.\n3. Loop: call string.find(substring, start). If result is -1, break.\n4. On each match, increment count and set start = match_index + 1 (advance by 1, NOT by substring length, to allow overlaps).\n5. Return count.\n\nEdge cases:\n- Empty substring: return 0 immediately (find would always return 0 → infinite loop).\n- Empty string: find returns -1, count stays 0.\n- Substring longer than string: find returns -1, count stays 0.\n\nValidation:\n- Verify 'aaaa' with 'aa' returns 3, not 2.\n- Verify 'aaa' with 'a' returns 3.\n- Verify '' with 'a' returns 0.",
+    "source_task_id": "HumanEval/18",
+    "sequence_index": 9
+  },
+  {
+    "id": "skl-9d74557011c1",
+    "name": "find-closest-pair-by-sorting",
+    "description": "When you need to find the two elements in a list with the minimum absolute difference (closest pair)",
+    "content": "1. Sort the list so the closest pair becomes adjacent (reduces O(n²) comparisons to O(n log n)).\n2. Initialize min_diff to infinity and result to the first adjacent pair.\n3. Iterate i from 0 to len-2, computing diff = sorted[i+1] - sorted[i].\n4. If diff < min_diff, update min_diff and result = (sorted[i], sorted[i+1]).\n5. Return the pair, which is already in (smaller, larger) order due to sorting.\n\nEdge cases: duplicates yield diff=0 and are correctly returned; exactly two elements returns that pair; negative numbers work since sorting preserves order.\n\nValidation: input must have length >= 2; result is always ordered (smaller, larger).",
+    "source_task_id": "HumanEval/20",
+    "sequence_index": 10
+  },
+  {
+    "id": "skl-26ea65d87a04",
+    "name": "filter-by-exact-type",
+    "description": "When you need to filter a list to only include elements of a specific exact type, excluding subclasses.",
+    "content": "Method:\n1. Use a list comprehension: [x for x in values if type(x) is <desired_type>].\n2. This checks for exact type match, so subclasses (e.g., bool for int) are excluded.\n3. If you want to include subclasses, use isinstance(x, <desired_type>) instead.\n\nEdge cases:\n- Booleans are a subclass of int, so type(True) is int returns False.\n- Input may not be a list; ensure it is iterable.\n\nValidation:\n- Check that the input is iterable; raise TypeError if not.\n- For large lists, consider using a generator expression to save memory.",
+    "source_task_id": "HumanEval/22",
+    "sequence_index": 11
+  }
+]

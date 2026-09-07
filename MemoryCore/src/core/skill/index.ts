@@ -12,6 +12,7 @@
 export type {
   IdFields,
   SkillStatus,
+  SkillScope,
   SkillManifestEntry,
   Skill,
   AppendVersionInput,
@@ -134,7 +135,11 @@ export {
 } from "./prompts/skill-listing-prompt.js";
 
 // 抽取 prompt
-export { SKILL_REVIEW_PROMPT } from "./prompts/skill-review-prompt.js";
+export {
+  SKILL_REVIEW_PROMPT,
+  SKILL_REVIEW_PROMPT_EVIDENCE,
+  getSkillReviewPrompt,
+} from "./prompts/skill-review-prompt.js";
 
 // 抽取链路里 worker / dedupe 共用的 ExtractorLLMRunner（与 v2 ExtractorRunner 形状兼容）。
 export type { ExtractorLLMRunner } from "./types.js";

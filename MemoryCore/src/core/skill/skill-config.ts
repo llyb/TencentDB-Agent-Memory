@@ -55,6 +55,34 @@ function validPositiveInteger(
   return fallback;
 }
 
+function validNonNegativeInteger(
+  raw: number | undefined,
+  fallback: number,
+  logger: ResolverLogger,
+  fieldName: string,
+): number {
+  if (raw === undefined) return fallback;
+  if (Number.isInteger(raw) && raw >= 0) return raw;
+  logger.warn(
+    `${TAG} ${fieldName}=${raw} invalid (must be non-negative integer); falling back to ${fallback}`,
+  );
+  return fallback;
+}
+
+function validFraction(
+  raw: number | undefined,
+  fallback: number,
+  logger: ResolverLogger,
+  fieldName: string,
+): number {
+  if (raw === undefined) return fallback;
+  if (Number.isFinite(raw) && raw >= 0 && raw <= 1) return raw;
+  logger.warn(
+    `${TAG} ${fieldName}=${raw} invalid (must be between 0 and 1); falling back to ${fallback}`,
+  );
+  return fallback;
+}
+
 /**
  * @param strictMode — when true, COS/contentBackend degradations throw instead of silently
  *   falling back to local. Use in service mode where COS is always required.
@@ -157,10 +185,9 @@ export function resolveSkillConfig(
     );
   }
 
-  // --------------- archiveBytes (单一归档尺寸旋钮) ---------------
-  // 派生 7 个内部字段: bytesThreshold / requestCompressThresholdBytes /
-  // chunkMaxBytes / headKeepBytes / tailKeepBytes / headChars / tailChars。
-  // 无效值 (<=0 或非整数) 落回默认 40KB + warn。
+  // --------------- archive and transcript budgets ---------------
+  // archiveBytes remains the backward-compatible buffer-size fallback;
+  // trigger/compression and transcript budgets can now be tuned separately.
   const DEFAULT_ARCHIVE_BYTES = 40 * 1024;
   const rawArchive = input.extraction?.archiveBytes;
   let archiveBytes = DEFAULT_ARCHIVE_BYTES;
@@ -174,6 +201,51 @@ export function resolveSkillConfig(
       archiveBytes = rawArchive;
     }
   }
+
+  const bytesThreshold = validPositiveInteger(
+    input.extraction?.bytesThreshold,
+    archiveBytes,
+    logger,
+    "extraction.bytesThreshold",
+  );
+  const requestCompressThresholdBytes = validPositiveInteger(
+    input.extraction?.requestCompressThresholdBytes,
+    archiveBytes,
+    logger,
+    "extraction.requestCompressThresholdBytes",
+  );
+  const headChars = validNonNegativeInteger(
+    input.extraction?.headChars,
+    8_000,
+    logger,
+    "extraction.headChars",
+  );
+  const tailChars = validNonNegativeInteger(
+    input.extraction?.tailChars,
+    32_000,
+    logger,
+    "extraction.tailChars",
+  );
+
+  // charBudgetPercent used to be stored but never consumed. Resolve it once
+  // into the absolute budget used by /v3/skill/listing. 800K keeps the legacy
+  // default stable: 1% = 8K chars.
+  const contextWindowChars = validPositiveInteger(
+    input.routing?.contextWindowChars,
+    800_000,
+    logger,
+    "routing.contextWindowChars",
+  );
+  const charBudgetPercent = validFraction(
+    input.routing?.charBudgetPercent,
+    0.01,
+    logger,
+    "routing.charBudgetPercent",
+  );
+  const listingCharBudget = Math.min(
+    64_000,
+    Math.floor(contextWindowChars * charBudgetPercent),
+  );
 
   // --------------- worker (2026-07-30) ---------------
   // Worker pool concurrency. 优先级: env > yaml > 默认 60。无效值 warn 落回默认。
@@ -229,32 +301,48 @@ export function resolveSkillConfig(
     routing: {
       mode: routingMode,
       hybridAlpha: input.routing?.hybridAlpha ?? 0.3,
-      searchTopK: input.routing?.searchTopK ?? 20,
-      charBudgetPercent: input.routing?.charBudgetPercent ?? 0.01,
+      searchTopK: validPositiveInteger(input.routing?.searchTopK, 20, logger, "routing.searchTopK"),
+      charBudgetPercent,
+      contextWindowChars,
+      listingCharBudget,
       fastPathMinNameLength: input.routing?.fastPathMinNameLength ?? 4,
     },
     extraction: {
       enabled: extractionEnabled,
-      toolCallThreshold: input.extraction?.toolCallThreshold ?? 10,
+      toolCallThreshold: validNonNegativeInteger(
+        input.extraction?.toolCallThreshold,
+        10,
+        logger,
+        "extraction.toolCallThreshold",
+      ),
       model: input.extraction?.model,
-      maxIterations: input.extraction?.maxIterations ?? 16,
+      maxIterations: validPositiveInteger(
+        input.extraction?.maxIterations,
+        16,
+        logger,
+        "extraction.maxIterations",
+      ),
+      promptVersion: input.extraction?.promptVersion === "evidence" ? "evidence" : "legacy",
+      transcriptStrategy: input.extraction?.transcriptStrategy === "structured"
+        ? "structured"
+        : "head_tail",
       archiveBytes,
       maxTokens: input.extraction?.maxTokens,
-      prefixSkillsLimit: validPositiveInteger(
+      prefixSkillsLimit: validNonNegativeInteger(
         input.extraction?.prefixSkillsLimit,
         20,
         logger,
         "extraction.prefixSkillsLimit",
       ),
-      // 派生字段 — 命名和默认值来自 add-handler.ts / oversize-strategy.ts
-      // 的 DEFAULT_* 常量，保持"改一个 archiveBytes 一切随动"的语义。
-      bytesThreshold: archiveBytes,
-      requestCompressThresholdBytes: archiveBytes,
+      // Oversize storage remains derived from archiveBytes; trigger and
+      // extractor budgets above are independent experiment controls.
+      bytesThreshold,
+      requestCompressThresholdBytes,
       chunkMaxBytes: 2 * archiveBytes,
       headKeepBytes: archiveBytes,
       tailKeepBytes: archiveBytes,
-      headChars: archiveBytes,
-      tailChars: archiveBytes,
+      headChars,
+      tailChars,
     },
     compress: {
       toolContentThresholdBytes: input.compress?.toolContentThresholdBytes ?? 2048,

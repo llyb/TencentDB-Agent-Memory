@@ -1,0 +1,82 @@
+{"task_id": "HumanEval/1", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/3", "completion": "\n    balance = 0\n    for op in operations:\n        balance += op\n        if balance < 0:\n            return True\n    return False", "result": "passed", "passed": true}
+{"task_id": "HumanEval/5", "completion": "\n    if not numbers:\n        return []\n    result = []\n    for i, num in enumerate(numbers):\n        if i > 0:\n            result.append(delimeter)\n        result.append(num)\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/7", "completion": "\n    return [s for s in strings if substring in s]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/9", "completion": "\n    result = []\n    current_max = None\n    for num in numbers:\n        if current_max is None or num > current_max:\n            current_max = num\n        result.append(current_max)\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/11", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/13", "completion": "\nwhile b:\n        a, b = b, a % b\n    return abs(a)", "result": "failed: unindent does not match any outer indentation level (<string>, line 13)", "passed": false}
+{"task_id": "HumanEval/15", "completion": "\n    return ' '.join(str(i) for i in range(n + 1))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/17", "completion": "\n    mapping = {'o': 4, 'o|': 2, '.|': 1}\n    return [mapping[note] for note in music_string.split()]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/19", "completion": "\n    mapping = {'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9}\n    return ' '.join(sorted(numbers.split(), key=lambda x: mapping[x]))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/21", "completion": "\n    min_val = min(numbers)\n    max_val = max(numbers)\n    if max_val == min_val:\n        return [0.0] * len(numbers)\n    return [(x - min_val) / (max_val - min_val) for x in numbers]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/23", "completion": "\n    return len(string)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/25", "completion": "\n    factors = []\n    d = 2\n    while d * d <= n:\n        while n % d == 0:\n            factors.append(d)\n            n //= d\n        d += 1\n    if n > 1:\n        factors.append(n)\n    return factors", "result": "passed", "passed": true}
+{"task_id": "HumanEval/27", "completion": "\n    return string.swapcase()", "result": "passed", "passed": true}
+{"task_id": "HumanEval/29", "completion": "\n    return [s for s in strings if s.startswith(prefix)]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/31", "completion": "\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True", "result": "passed", "passed": true}
+{"task_id": "HumanEval/33", "completion": "\n    thirds = [l[i] for i in range(0, len(l), 3)]\n    thirds.sort()\n    result = l[:]\n    for i, val in zip(range(0, len(l), 3), thirds):\n        result[i] = val\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/35", "completion": "\n    m = l[0]\n    for e in l:\n        if e > m:\n            m = e\n    return m", "result": "passed", "passed": true}
+{"task_id": "HumanEval/37", "completion": "\n    evens = sorted(l[::2])\n    result = l[:]\n    result[::2] = evens\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/39", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/41", "completion": "\n    return n * n", "result": "passed", "passed": true}
+{"task_id": "HumanEval/43", "completion": "\n    seen = set()\n    for x in l:\n        if -x in seen:\n            return True\n        seen.add(x)\n    return False", "result": "passed", "passed": true}
+{"task_id": "HumanEval/45", "completion": "\n    return a * h / 2", "result": "passed", "passed": true}
+{"task_id": "HumanEval/47", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/49", "completion": "\n    return pow(2, n, p)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/51", "completion": "\n    return ''.join(c for c in text if c.lower() not in 'aeiou')", "result": "passed", "passed": true}
+{"task_id": "HumanEval/53", "completion": "\n    return x + y", "result": "passed", "passed": true}
+{"task_id": "HumanEval/55", "completion": "\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a", "result": "passed", "passed": true}
+{"task_id": "HumanEval/57", "completion": "\n    return all(x <= y for x, y in zip(l, l[1:])) or all(x >= y for x, y in zip(l, l[1:]))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/59", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/61", "completion": "\n    count = 0\n    for char in brackets:\n        if char == '(':\n            count += 1\n        else:\n            count -= 1\n        if count < 0:\n            return False\n    return count == 0", "result": "passed", "passed": true}
+{"task_id": "HumanEval/63", "completion": "\n    if n == 0:\n        return 0\n    if n == 1:\n        return 0\n    if n == 2:\n        return 1\n    a, b, c = 0, 0, 1\n    for i in range(3, n + 1):\n        a, b, c = b, c, a + b + c\n    return c", "result": "passed", "passed": true}
+{"task_id": "HumanEval/65", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/67", "completion": "\n    return n - sum(int(x) for x in s.split() if x.isdigit())", "result": "passed", "passed": true}
+{"task_id": "HumanEval/69", "completion": "\n    freq = {}\n    for num in lst:\n        freq[num] = freq.get(num, 0) + 1\n    ans = -1\n    for num, count in freq.items():\n        if count >= num and num > ans:\n            ans = num\n    return ans", "result": "passed", "passed": true}
+{"task_id": "HumanEval/71", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/73", "completion": "\n    return sum(1 for i in range(len(arr) // 2) if arr[i] != arr[-1 - i])", "result": "passed", "passed": true}
+{"task_id": "HumanEval/75", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/77", "completion": "\n", "result": "failed: First test error: None", "passed": false}
+{"task_id": "HumanEval/79", "completion": "\n    return 'db' + format(decimal, 'b') + 'db'", "result": "passed", "passed": true}
+{"task_id": "HumanEval/81", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/83", "completion": "\n    if n == 1:\n        return 1\n    return 18 * 10**(n-2)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/85", "completion": "\n    return sum(lst[i] for i in range(1, len(lst), 2) if lst[i] % 2 == 0)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/87", "completion": "\n    result = []\n    for i, row in enumerate(lst):\n        for j, val in enumerate(row):\n            if val == x:\n                result.append((i, j))\n    result.sort(key=lambda coord: (coord[0], -coord[1]))\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/89", "completion": "\n    result = []\n    for char in s:\n        if 'a' <= char <= 'z':\n            result.append(chr((ord(char) - ord('a') + 4) % 26 + ord('a')))\n        elif 'A' <= char <= 'Z':\n            result.append(chr((ord(char) - ord('A') + 4) % 26 + ord('A')))\n        else:\n            result.append(char)\n    return ''.join(result)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/91", "completion": "\n    count = 0\n    sentence = \"\"\n    for char in S:\n        if char in '.?!':\n            words = sentence.strip().split()\n            if words and words[0] == \"I\":\n                count += 1\n            sentence = \"\"\n        else:\n            sentence += char\n    words = sentence.strip().split()\n    if words and words[0] == \"I\":\n        count += 1\n    return count", "result": "passed", "passed": true}
+{"task_id": "HumanEval/93", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/95", "completion": "\n    if not dict:\n        return False\n    if not all(isinstance(k, str) for k in dict):\n        return False\n    return all(k.islower() for k in dict) or all(k.isupper() for k in dict)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/97", "completion": "\n    return (a % 10) * (b % 10)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/99", "completion": "\n", "result": "failed: Test 1", "passed": false}
+{"task_id": "HumanEval/101", "completion": "\n    return s.replace(',', ' ').split()", "result": "passed", "passed": true}
+{"task_id": "HumanEval/103", "completion": "\n    if n > m:\n        return -1\n    total = n + m\n    if total % 2 == 0:\n        return bin(total // 2)\n    else:\n        half = total // 2\n        return bin(half if half % 2 == 0 else half + 1)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/105", "completion": "\n    names = [\"One\", \"Two\", \"Three\", \"Four\", \"Five\", \"Six\", \"Seven\", \"Eight\", \"Nine\"]\n    filtered = sorted([x for x in arr if 1 <= x <= 9], reverse=True)\n    return [names[x-1] for x in filtered]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/107", "completion": "\n    even_count = 0\n    odd_count = 0\n    for i in range(1, n + 1):\n        s = str(i)\n        if s == s[::-1]:\n            if i % 2 == 0:\n                even_count += 1\n            else:\n                odd_count += 1\n    return (even_count, odd_count)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/109", "completion": "\n    if not arr:\n        return True\n    n = len(arr)\n    drops = 0\n    for i in range(n):\n        if arr[i] > arr[(i+1)%n]:\n            drops += 1\n    return drops <= 1", "result": "passed", "passed": true}
+{"task_id": "HumanEval/111", "completion": "\n    counts = {}\n    for letter in test.split():\n        counts[letter] = counts.get(letter, 0) + 1\n    if not counts:\n        return {}\n    max_count = max(counts.values())\n    return {k: v for k, v in counts.items() if v == max_count}", "result": "passed", "passed": true}
+{"task_id": "HumanEval/113", "completion": "\n", "result": "failed: Test 1", "passed": false}
+{"task_id": "HumanEval/115", "completion": "\n    total = 0\n    for row in grid:\n        total += math.ceil(sum(row) / capacity)\n    return total", "result": "passed", "passed": true}
+{"task_id": "HumanEval/117", "completion": "\n", "result": "failed: First test error: None", "passed": false}
+{"task_id": "HumanEval/119", "completion": "\n    def is_balanced(s):\n        bal = 0\n        for c in s:\n            if c == '(':\n                bal += 1\n            else:\n                bal -= 1\n            if bal < 0:\n                return False\n        return bal == 0\n\n    s1, s2 = lst\n    if is_balanced(s1 + s2) or is_balanced(s2 + s1):\n        return 'Yes'\n    return 'No'", "result": "passed", "passed": true}
+{"task_id": "HumanEval/121", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/123", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/125", "completion": "\n    if any(c.isspace() for c in txt):\n        return txt.split()\n    elif ',' in txt:\n        return txt.split(',')\n    else:\n        return sum(1 for c in txt if c.islower() and (ord(c) - ord('a')) % 2 == 1)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/127", "completion": "\n    start = max(interval1[0], interval2[0])\n    end = min(interval1[1], interval2[1])\n    \n    if start > end:\n        return \"NO\"\n        \n    length = end - start\n    \n    if length < 2:\n        return \"NO\"\n        \n    for i in range(2, int(length**0.5) + 1):\n        if length % i == 0:\n            return \"NO\"\n            \n    return \"YES\"", "result": "passed", "passed": true}
+{"task_id": "HumanEval/129", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/131", "completion": "\n    product = 0\n    for digit in str(n):\n        d = int(digit)\n        if d % 2 == 1:\n            if product == 0:\n                product = d\n            else:\n                product *= d\n    return product", "result": "passed", "passed": true}
+{"task_id": "HumanEval/133", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/135", "completion": "\n    largest = -1\n    for i in range(1, len(arr)):\n        if arr[i] < arr[i-1]:\n            largest = i\n    return largest", "result": "passed", "passed": true}
+{"task_id": "HumanEval/137", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/139", "completion": "\n    result = 1\n    factorial = 1\n    for i in range(1, n + 1):\n        factorial *= i\n        result *= factorial\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/141", "completion": "\n    # Check for exactly one dot\n    if file_name.count('.') != 1:\n        return 'No'\n    \n    # Split into name and extension\n    parts = file_name.split('.')\n    name = parts[0]\n    extension = parts[1]\n    \n    # Check that name is not empty and starts with a Latin letter\n    if not name or not (('a' <= name[0] <= 'z') or ('A' <= name[0] <= 'Z')):\n        return 'No'\n    \n    # Check that extension is valid\n    if extension not in ['txt', 'exe', 'dll']:\n        return 'No'\n    \n    # Check that there are not more than three digits\n    digit_count = sum(1 for c in file_name if '0' <= c <= '9')\n    if digit_count > 3:\n        return 'No'\n    \n    return 'Yes'", "result": "passed", "passed": true}
+{"task_id": "HumanEval/143", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/145", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/147", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/149", "completion": "\n    return sorted([s for s in lst if len(s) % 2 == 0], key=lambda x: (len(x), x))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/151", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/153", "completion": "\n    max_strength = float('-inf')\n    strongest = None\n    for ext in extensions:\n        cap = sum(1 for c in ext if c.isupper())\n        sm = sum(1 for c in ext if c.islower())\n        strength = cap - sm\n        if strength > max_strength:\n            max_strength = strength\n            strongest = ext\n    return f\"{class_name}.{strongest}\"", "result": "passed", "passed": true}
+{"task_id": "HumanEval/155", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/157", "completion": "\n    return a**2 + b**2 == c**2 or a**2 + c**2 == b**2 or b**2 + c**2 == a**2", "result": "passed", "passed": true}
+{"task_id": "HumanEval/159", "completion": "\n", "result": "failed: Error", "passed": false}
+{"task_id": "HumanEval/161", "completion": "\n    if not any(c.isalpha() for c in s):\n        return s[::-1]\n    return s.swapcase()", "result": "passed", "passed": true}
+{"task_id": "HumanEval/163", "completion": "\n", "result": "failed: Test 1", "passed": false}

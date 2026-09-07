@@ -1,0 +1,41 @@
+{"task_id":"HumanEval/82","completion":"\n    n = len(string)\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True"}
+{"task_id":"HumanEval/84","completion":"\n    digit_sum = sum(int(d) for d in str(N))\n    return bin(digit_sum)[2:]"}
+{"task_id":"HumanEval/86","completion":"\n"}
+{"task_id":"HumanEval/88","completion":"\n"}
+{"task_id":"HumanEval/90","completion":"\n    unique = sorted(set(lst))\n    if len(unique) < 2:\n        return None\n    return unique[1]"}
+{"task_id":"HumanEval/92","completion":"\n    if type(x) is not int or type(y) is not int or type(z) is not int:\n        return False\n    return x == y + z or y == x + z or z == x + y"}
+{"task_id":"HumanEval/94","completion":"\n    def is_prime(n):\n        if n < 2:\n            return False\n        for i in range(2, int(n**0.5) + 1):\n            if n % i == 0:\n                return False\n        return True\n\n    max_prime = 0\n    for num in lst:\n        if is_prime(num) and num > max_prime:\n            max_prime = num\n\n    return sum(int(d) for d in str(max_prime))"}
+{"task_id":"HumanEval/96","completion":"\n"}
+{"task_id":"HumanEval/98","completion":"\n    count = 0\n    vowels = \"AEIOU\"\n    for i in range(0, len(s), 2):\n        if s[i] in vowels:\n            count += 1\n    return count"}
+{"task_id":"HumanEval/100","completion":"\n    return [n + 2 * i for i in range(n)]"}
+{"task_id":"HumanEval/102","completion":"\n"}
+{"task_id":"HumanEval/104","completion":"\n    return sorted([n for n in x if all(int(d) % 2 != 0 for d in str(n))])"}
+{"task_id":"HumanEval/106","completion":"\n    result = []\n    for i in range(1, n + 1):\n        if i % 2 == 0:\n            fact = 1\n            for j in range(1, i + 1):\n                fact *= j\n            result.append(fact)\n        else:\n            result.append(sum(range(1, i + 1)))\n    return result"}
+{"task_id":"HumanEval/108","completion":"\n"}
+{"task_id":"HumanEval/110","completion":"\n    odd_count = sum(1 for x in lst1 if x % 2 != 0)\n    even_count = sum(1 for x in lst2 if x % 2 == 0)\n    return \"YES\" if odd_count <= even_count else \"NO\""}
+{"task_id":"HumanEval/112","completion":"\n    result = ''.join(ch for ch in s if ch not in c)\n    return (result, result == result[::-1])"}
+{"task_id":"HumanEval/114","completion":"\n    min_sum = nums[0]\n    current_sum = nums[0]\n    for num in nums[1:]:\n        current_sum = min(num, current_sum + num)\n        min_sum = min(min_sum, current_sum)\n    return min_sum"}
+{"task_id":"HumanEval/116","completion":"\n"}
+{"task_id":"HumanEval/118","completion":"\n"}
+{"task_id":"HumanEval/120","completion":"\n    return sorted(arr)[-k:] if k else []"}
+{"task_id":"HumanEval/122","completion":"\n    return sum(x for x in arr[:k] if abs(x) < 100)"}
+{"task_id":"HumanEval/124","completion":"\n    if not date:\n        return False\n    \n    parts = date.split('-')\n    if len(parts) != 3:\n        return False\n    \n    try:\n        month = int(parts[0])\n        day = int(parts[1])\n        year = int(parts[2])\n    except ValueError:\n        return False\n    \n    if month < 1 or month > 12:\n        return False\n    \n    if month in [1, 3, 5, 7, 8, 10, 12]:\n        if day < 1 or day > 31:\n            return False\n    elif month in [4, 6, 9, 11]:\n        if day < 1 or day > 30:\n            return False\n    elif month == 2:\n        if day < 1 or day > 29:\n            return False\n    \n    return True"}
+{"task_id":"HumanEval/126","completion":"\n"}
+{"task_id":"HumanEval/128","completion":"\n"}
+{"task_id":"HumanEval/130","completion":"\n"}
+{"task_id":"HumanEval/132","completion":"\n"}
+{"task_id":"HumanEval/134","completion":"\n"}
+{"task_id":"HumanEval/136","completion":"\n    neg = [x for x in lst if x < 0]\n    pos = [x for x in lst if x > 0]\n    a = max(neg) if neg else None\n    b = min(pos) if pos else None\n    return (a, b)"}
+{"task_id":"HumanEval/138","completion":"\n    return n % 2 == 0 and n >= 8"}
+{"task_id":"HumanEval/140","completion":"\n    result = []\n    i = 0\n    n = len(text)\n    while i < n:\n        if text[i] == ' ':\n            j = i\n            while j < n and text[j] == ' ':\n                j += 1\n            run_len = j - i\n            if run_len > 2:\n                result.append('-')\n            else:\n                result.append('_' * run_len)\n            i = j\n        else:\n            result.append(text[i])\n            i += 1\n    return ''.join(result)"}
+{"task_id":"HumanEval/142","completion":"\n    total = 0\n    for i, x in enumerate(lst):\n        if i % 3 == 0:\n            total += x ** 2\n        elif i % 4 == 0:\n            total += x ** 3\n        else:\n            total += x\n    return total"}
+{"task_id":"HumanEval/144","completion":"\n    num1, den1 = map(int, x.split('/'))\n    num2, den2 = map(int, n.split('/'))\n    return (num1 * num2) % (den1 * den2) == 0"}
+{"task_id":"HumanEval/146","completion":"\n    count = 0\n    for num in nums:\n        if num > 10:\n            n = num\n            last = n % 10\n            while n >= 10:\n                n //= 10\n            first = n\n            if first % 2 == 1 and last % 2 == 1:\n                count += 1\n    return count"}
+{"task_id":"HumanEval/148","completion":"\n"}
+{"task_id":"HumanEval/150","completion":"\n    if n < 2:\n        return y\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return y\n    return x"}
+{"task_id":"HumanEval/152","completion":"\n    return [abs(g - s) for g, s in zip(guess, game)]"}
+{"task_id":"HumanEval/154","completion":"\n"}
+{"task_id":"HumanEval/156","completion":"\n"}
+{"task_id":"HumanEval/158","completion":"\n    if not words:\n        return \"\"\n    return min(words, key=lambda w: (-len(set(w)), w))"}
+{"task_id":"HumanEval/160","completion":"\n    expression = str(operand[0])\n    for op, num in zip(operator, operand[1:]):\n        expression += f\" {op} {num}\"\n    return eval(expression)"}
+{"task_id":"HumanEval/162","completion":"\n    import hashlib\n    if not text:\n        return None\n    return hashlib.md5(text.encode()).hexdigest()"}

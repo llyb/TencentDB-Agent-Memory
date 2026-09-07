@@ -1968,7 +1968,7 @@ export class TdaiGateway {
     skillCore: SkillCoreType,
     instanceId: string,
   ): Promise<SkillExtractorClass> {
-    const { SKILL_REVIEW_PROMPT } = await import("../core/skill/index.js");
+    const { getSkillReviewPrompt } = await import("../core/skill/index.js");
     const { StandaloneLLMRunner } = await import("../adapters/standalone/llm-runner.js");
     const { resolveStandaloneLlmForRuntime, LlmProviderResolveError } = await import("../adapters/standalone/llm-provider-resolver.js");
 
@@ -2004,13 +2004,14 @@ export class TdaiGateway {
     return new SkillExtractorClass({
       core: skillCore,
       runner: llmRunner,
-      systemPrompt: SKILL_REVIEW_PROMPT,
+      systemPrompt: getSkillReviewPrompt(cfg?.extraction.promptVersion ?? "legacy"),
       maxIterations: cfg?.extraction.maxIterations ?? 5,
-      // 透传 archiveBytes 派生的 head/tail chars + 独立的 maxTokens，
-      // 让 skill.extraction.archiveBytes 与 skill.extraction.maxTokens 生效
+      // 透传独立的 head/tail chars、Transcript 策略和 maxTokens，
+      // 让 skill.extraction 的实验参数无需改代码即可生效
       // (yaml 里改完不用改代码)。cfg 缺失时 SkillExtractor 内部有默认。
       headChars: cfg?.extraction.headChars,
       tailChars: cfg?.extraction.tailChars,
+      transcriptStrategy: cfg?.extraction.transcriptStrategy,
       maxTokens: cfg?.extraction.maxTokens,
       prefixSkillsLimit: cfg?.extraction.prefixSkillsLimit,
       logger: this.logger,

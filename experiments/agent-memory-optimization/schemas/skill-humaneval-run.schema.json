@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill HumanEval run row",
+  "type": "object",
+  "required": [
+    "task_id", "family", "sequence_index", "group", "seed", "pass",
+    "turns", "solve_input_tokens", "solve_output_tokens",
+    "skill_extraction_tokens", "skill_routing_tokens", "archive_triggered",
+    "extracted_skill_ids", "injected_skill_ids"
+  ],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^HumanEval/[0-9]+$" },
+    "family": { "type": "string", "minLength": 1 },
+    "sequence_index": { "type": "integer", "minimum": 0 },
+    "group": { "type": "string", "pattern": "^S[0-5]$" },
+    "seed": { "type": "integer" },
+    "pass": { "type": "boolean" },
+    "turns": { "type": "integer", "minimum": 0 },
+    "solve_input_tokens": { "type": "integer", "minimum": 0 },
+    "solve_output_tokens": { "type": "integer", "minimum": 0 },
+    "skill_extraction_tokens": { "type": "integer", "minimum": 0 },
+    "skill_routing_tokens": { "type": "integer", "minimum": 0 },
+    "archive_triggered": { "type": "boolean" },
+    "extracted_skill_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "injected_skill_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "snapshot_skill_ids": {
+      "type": "array",
+      "description": "Frozen Skills available before the first task in an injection-only run.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": true
+}

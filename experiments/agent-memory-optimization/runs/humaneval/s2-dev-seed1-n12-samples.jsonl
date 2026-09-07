@@ -1,0 +1,12 @@
+{"task_id":"HumanEval/0","completion":"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False"}
+{"task_id":"HumanEval/2","completion":"\n    return number - int(number)"}
+{"task_id":"HumanEval/4","completion":"\n    if not numbers:\n        return 0.0\n    mean = sum(numbers) / len(numbers)\n    return sum(abs(x - mean) for x in numbers) / len(numbers)"}
+{"task_id":"HumanEval/6","completion":"\n    result = []\n    for group in paren_string.split():\n        current_depth = 0\n        max_depth = 0\n        for char in group:\n            if char == '(':\n                current_depth += 1\n                max_depth = max(max_depth, current_depth)\n            elif char == ')':\n                current_depth -= 1\n        result.append(max_depth)\n    return result"}
+{"task_id":"HumanEval/8","completion":"\n    total_sum = 0\n    total_product = 1\n    for num in numbers:\n        total_sum += num\n        total_product *= num\n    return total_sum, total_product"}
+{"task_id":"HumanEval/10","completion":"\n    for i in range(len(string)):\n        if is_palindrome(string[i:]):\n            return string + string[:i][::-1]\n    return \"\""}
+{"task_id":"HumanEval/12","completion":"\n    if not strings:\n        return None\n    return max(strings, key=len)"}
+{"task_id":"HumanEval/14","completion":"\n    return [string[:i] for i in range(1, len(string) + 1)]"}
+{"task_id":"HumanEval/16","completion":"\n    return len(set(string.lower()))"}
+{"task_id":"HumanEval/18","completion":"\n    if not substring:\n        return 0\n    count = 0\n    start = 0\n    while True:\n        start = string.find(substring, start)\n        if start == -1:\n            break\n        count += 1\n        start += 1\n    return count"}
+{"task_id":"HumanEval/20","completion":"\n    numbers_sorted = sorted(numbers)\n    min_diff = float('inf')\n    result = (numbers_sorted[0], numbers_sorted[1])\n    for i in range(len(numbers_sorted) - 1):\n        diff = numbers_sorted[i + 1] - numbers_sorted[i]\n        if diff < min_diff:\n            min_diff = diff\n            result = (numbers_sorted[i], numbers_sorted[i + 1])\n    return result"}
+{"task_id":"HumanEval/22","completion":"\n    return [x for x in values if type(x) is int]"}

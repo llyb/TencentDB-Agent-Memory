@@ -18,6 +18,7 @@
 
 import { tool, jsonSchema } from "ai";
 import { SkillCoreError, type SkillCore } from "./skill-core.js";
+import type { SkillScope } from "./types.js";
 
 export type ExtractedAction =
   | "create"
@@ -49,6 +50,35 @@ function jsonError(e: unknown): string {
     return JSON.stringify({ error: e.code, message: e.message });
   }
   return JSON.stringify({ error: "INTERNAL", message: (e as Error).message });
+}
+
+export function normalizeSkillNameForDedup(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const DEDUP_STOP_WORDS = new Set([
+  "a", "an", "and", "by", "for", "from", "in", "of", "the", "then", "to", "use", "using", "via", "with",
+]);
+
+function dedupNameTerms(name: string): Set<string> {
+  return new Set(name.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map((term) => {
+    if (term.endsWith("ing") && term.length > 5) return term.slice(0, -3);
+    if (term.endsWith("ed") && term.length > 4) return term.slice(0, -2);
+    return term;
+  }).filter((term) => !DEDUP_STOP_WORDS.has(term)));
+}
+
+/** Conservative near-duplicate signal: every term in the shorter name must overlap. */
+export function skillNameOverlapForDedup(a: string, b: string): number {
+  const left = dedupNameTerms(a);
+  const right = dedupNameTerms(b);
+  // A single generic term (for example "sorting") is not enough evidence to
+  // reject a create. Exact one-term names are already handled by normalized
+  // equality in the caller.
+  if (left.size < 2 || right.size < 2) return 0;
+  let overlap = 0;
+  for (const term of left) if (right.has(term)) overlap += 1;
+  return overlap / Math.min(left.size, right.size);
 }
 
 export function createSkillTools(opts: CreateSkillToolsOptions) {
@@ -121,17 +151,60 @@ export function createSkillTools(opts: CreateSkillToolsOptions) {
 
     skill_create: tool({
       description: "Create a new skill. The frontmatter `name` MUST equal the `name` parameter.",
-      inputSchema: jsonSchema<{ name: string; content: string }>({
+      inputSchema: jsonSchema<{ name: string; content: string; scope?: SkillScope }>({
         type: "object",
         properties: {
           name: { type: "string", description: "Skill name (lowercase letters/digits/hyphen)" },
           content: { type: "string", description: "Full SKILL.md text including frontmatter" },
+          scope: {
+            type: "object",
+            description: "Optional applicability boundary inferred from the transcript; omit unknown fields.",
+            properties: {
+              repo: { type: "string" },
+              path_globs: { type: "array", items: { type: "string" } },
+              languages: { type: "array", items: { type: "string" } },
+              versions: { type: "array", items: { type: "string" } },
+            },
+            additionalProperties: false,
+          },
         },
         required: ["name", "content"],
       }),
-      execute: async ({ name, content }) => {
+      execute: async ({ name, content, scope }) => {
         try {
-          const r = await core.create({ ...writeIds, name, content });
+          // Store uniqueness catches exact names. This conservative preflight
+          // also catches separator-only and modifier-only name variants so the
+          // extractor updates an existing Skill instead of fragmenting it.
+          const normalized = normalizeSkillNameForDedup(name);
+          let duplicate: Awaited<ReturnType<SkillCore["search"]>>[number] | undefined;
+          try {
+            const similar = await core.search({ ...readIds, query: name.replace(/-/g, " "), top_k: 5 });
+            duplicate = similar.find((hit) =>
+              normalizeSkillNameForDedup(hit.skill.name) === normalized
+              || skillNameOverlapForDedup(hit.skill.name, name) >= 1);
+          } catch (error) {
+            logger?.warn(`[skill-tools] duplicate preflight unavailable: ${(error as Error).message}`);
+          }
+          if (duplicate) {
+            return JSON.stringify({
+              error: "SKILL_SIMILAR_EXISTS",
+              message: `A matching skill already exists: ${duplicate.skill.name}`,
+              skill_id: duplicate.skill.skill_id,
+              version: duplicate.skill.version,
+              next_action: "skill_view then skill_update or skill_patch",
+            });
+          }
+          const r = await core.create({
+            ...writeIds,
+            name,
+            content,
+            metadata: {
+              source: "skill-extractor",
+              source_task_id: task_id,
+              extracted_at_ms: Date.now(),
+              scope,
+            },
+          });
           auditSink.push({ action: "create", name, skill_id: r.skill_id, version: r.version, description: r.description });
           logger?.info(`[skill-tools] created ${r.skill_id}`);
           return JSON.stringify({ ok: true, skill_id: r.skill_id, version: r.version });

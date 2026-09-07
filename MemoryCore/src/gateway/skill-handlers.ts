@@ -668,22 +668,162 @@ export async function handleExport(body: unknown, _auth: V2AuthContext, requestI
   }
 }
 
+export interface SkillListingItem {
+  skill_id: string;
+  name: string;
+  description: string;
+  version: number;
+  scope?: {
+    repo?: string;
+    path_globs?: string[];
+    languages?: string[];
+    versions?: string[];
+  };
+}
+
+export interface SkillListingQueryScope {
+  repo?: string;
+  path?: string;
+  language?: string;
+  version?: string;
+}
+
+export interface PackedSkillListing {
+  listing: string;
+  packed: SkillListingItem[];
+  omitted: number;
+  budgetUsed: number;
+  truncated: boolean;
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function parseSkillScope(metadataJson: string): SkillListingItem["scope"] {
+  try {
+    const parsed = JSON.parse(metadataJson) as { scope?: unknown };
+    if (!parsed.scope || typeof parsed.scope !== "object") return undefined;
+    const raw = parsed.scope as Record<string, unknown>;
+    const stringArray = (value: unknown): string[] | undefined => Array.isArray(value)
+      ? value.filter((entry): entry is string => typeof entry === "string" && entry.length > 0)
+      : undefined;
+    return {
+      repo: typeof raw.repo === "string" && raw.repo.length > 0 ? raw.repo : undefined,
+      path_globs: stringArray(raw.path_globs),
+      languages: stringArray(raw.languages),
+      versions: stringArray(raw.versions),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function globMatchesPath(glob: string, path: string): boolean {
+  const source = glob.replace(/\\/g, "/");
+  const target = path.replace(/\\/g, "/");
+  let regex = "^";
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i]!;
+    if (char === "*" && source[i + 1] === "*") {
+      regex += ".*";
+      i++;
+    } else if (char === "*") {
+      regex += "[^/]*";
+    } else if (char === "?") {
+      regex += "[^/]";
+    } else {
+      regex += char.replace(/[\\^$+?.()|{}\[\]]/g, "\\$&");
+    }
+  }
+  return new RegExp(`${regex}$`, "i").test(target);
+}
+
+/** Deterministic scope filter applied before prompt packing. */
+export function filterSkillListingsByScope(
+  items: SkillListingItem[],
+  query: SkillListingQueryScope | undefined,
+): SkillListingItem[] {
+  if (!query) return items;
+  return items.filter((item) => {
+    const scope = item.scope;
+    if (!scope) return true; // Backward-compatible: old Skills have unknown scope.
+    if (query.repo && scope.repo && query.repo.toLowerCase() !== scope.repo.toLowerCase()) return false;
+    if (query.path && scope.path_globs?.length
+      && !scope.path_globs.some((glob) => globMatchesPath(glob, query.path!))) return false;
+    if (query.language && scope.languages?.length
+      && !scope.languages.some((language) => language.toLowerCase() === query.language!.toLowerCase())) return false;
+    if (query.version && scope.versions?.length && !scope.versions.includes(query.version)) return false;
+    return true;
+  });
+}
+
+/** Pack whole Skill metadata entries; never slice a partially rendered item. */
+export function packSkillListing(
+  items: SkillListingItem[],
+  charBudget: number,
+): PackedSkillListing {
+  if (charBudget <= 0) {
+    return { listing: "", packed: [], omitted: items.length, budgetUsed: 0, truncated: items.length > 0 };
+  }
+
+  const open = "<available_skills>";
+  const close = "</available_skills>";
+  const empty = `${open}\n(none)\n${close}`;
+  if (items.length === 0) {
+    const listing = empty.length <= charBudget ? empty : "";
+    return { listing, packed: [], omitted: 0, budgetUsed: listing.length, truncated: false };
+  }
+  if (open.length + close.length + 1 > charBudget) {
+    return { listing: "", packed: [], omitted: items.length, budgetUsed: 0, truncated: true };
+  }
+
+  const packed: SkillListingItem[] = [];
+  const entries: string[] = [];
+  for (const item of items) {
+    // Keep the established line-oriented prompt shape for compatibility, but
+    // admit/reject the line atomically instead of slicing the whole XML blob.
+    const scopeSuffix = item.scope
+      ? ` [scope: ${escapeXml(JSON.stringify(item.scope))}]`
+      : "";
+    const entry = `- ${escapeXml(item.name)}: ${escapeXml(item.description)}${scopeSuffix}`;
+    const candidate = `${open}\n${[...entries, entry].join("\n")}\n${close}`;
+    if (candidate.length > charBudget) continue;
+    entries.push(entry);
+    packed.push(item);
+  }
+
+  const listing = `${open}\n${entries.join("\n")}\n${close}`;
+  return {
+    listing,
+    packed,
+    omitted: items.length - packed.length,
+    budgetUsed: listing.length,
+    truncated: packed.length < items.length,
+  };
+}
+
 export async function handleListing(body: unknown, _auth: V2AuthContext, requestId: string, deps: SkillRouterDeps): Promise<ApiResponseEnvelope> {
   const t0 = Date.now();
   const pre = await precheck(listingRequestSchema, body, _auth, deps, requestId);
   if (!pre.ok) { obsLogger.warn("skill.handleListing.done", { req_id: requestId, code: pre.envelope.code, dur_ms: Date.now() - t0, reason: "precheck" }); return pre.envelope; }
   try {
-    const charBudget = pre.data.char_budget ?? 8000;
     const query = (pre.data.query ?? "").trim();
     const useSearch = query.length > 0;
 
     // 从配置读 routing：searchTopK（listing 最多注入多少条）+ mode（bm25/embedding/hybrid）。
     const routing = deps.getResolvedSkillConfig?.()?.routing;
     const topK = routing?.searchTopK ?? 20;
+    const fetchTopK = pre.data.scope ? Math.min(100, topK * 4) : topK;
+    const charBudget = pre.data.char_budget ?? routing?.listingCharBudget ?? 8000;
 
     // search 模式：按 routing.mode 选检索算法；fallback 到 list head（query 为空）。
-    type Item = { skill_id: string; name: string; description: string; version: number };
-    let items: Item[];
+    let items: SkillListingItem[];
     let mode: "full" | "search";
     if (useSearch) {
       const hits = await pre.core.search({
@@ -691,7 +831,7 @@ export async function handleListing(body: unknown, _auth: V2AuthContext, request
         team_id: pre.data.team_id,
         agent_id: pre.data.agent_id,
         query,
-        top_k: topK,
+        top_k: fetchTopK,
         mode: routing?.mode,
       });
       items = hits.map((h) => ({
@@ -699,6 +839,7 @@ export async function handleListing(body: unknown, _auth: V2AuthContext, request
         name: h.skill.name,
         description: h.skill.description,
         version: h.skill.version,
+        scope: parseSkillScope(h.skill.metadata_json),
       }));
       mode = "search";
     } else {
@@ -706,36 +847,38 @@ export async function handleListing(body: unknown, _auth: V2AuthContext, request
         user_id: pre.data.user_id,
         team_id: pre.data.team_id,
         agent_id: pre.data.agent_id,
-        pagination: { limit: topK },
+        pagination: { limit: fetchTopK },
       });
       items = r.items.map((s) => ({
         skill_id: s.skill_id,
         name: s.name,
         description: s.description,
         version: s.version,
+        scope: parseSkillScope(s.metadata_json),
       }));
-      mode = items.length < topK ? "full" : "search";
+      mode = r.total <= fetchTopK ? "full" : "search";
     }
 
-    // 渲染 listing；按 char_budget 截断（保留头部 + 显式截断标记）。
-    const lines = items.map((s) => `- ${s.name}: ${s.description}`);
-    let listing = lines.length === 0
-      ? "<available_skills>\n(none)\n</available_skills>"
-      : `<available_skills>\n${lines.join("\n")}\n</available_skills>`;
-
-    if (listing.length > charBudget) {
-      const truncated = listing.slice(0, Math.max(0, charBudget - 32));
-      listing = `${truncated}\n... [truncated]\n</available_skills>`;
-    }
+    const fetchedCount = items.length;
+    items = filterSkillListingsByScope(items, pre.data.scope).slice(0, topK);
+    const packedResult = packSkillListing(items, charBudget);
 
     obsLogger.info("skill.handleListing.done", { req_id: requestId, code: 0, dur_ms: Date.now() - t0, mode,
-      hits: items.length,
-      listing_len: listing.length,
-      truncated: listing.length >= charBudget, });
+      fetched: fetchedCount,
+      hits: packedResult.packed.length,
+      omitted: packedResult.omitted,
+      listing_len: packedResult.listing.length,
+      budget_used: packedResult.budgetUsed,
+      char_budget: charBudget,
+      char_budget_percent: routing?.charBudgetPercent ?? -1,
+      truncated: packedResult.truncated, });
     return successEnvelope({
       mode,
-      listing,
-      hits: items.map((s) => ({ skill_id: s.skill_id, version: s.version, name: s.name })),
+      listing: packedResult.listing,
+      hits: packedResult.packed.map((s) => ({ skill_id: s.skill_id, version: s.version, name: s.name })),
+      fetched: fetchedCount,
+      omitted: packedResult.omitted,
+      budget_used: packedResult.budgetUsed,
     }, requestId);
   } catch (e) { obsLogger.error("skill.handleListing.done", { req_id: requestId, dur_ms: Date.now() - t0 }, e instanceof Error ? e : undefined); return mapCoreError(e, requestId); }
 }

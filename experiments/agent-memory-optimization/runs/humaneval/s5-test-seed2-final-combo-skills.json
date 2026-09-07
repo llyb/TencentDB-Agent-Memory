@@ -1,0 +1,378 @@
+[
+  {
+    "id": "skl-9fd3d95990a7",
+    "name": "two-pass-dispersion-statistic",
+    "description": "when computing statistics that need the mean as an intermediate value (MAD, variance, std, RMS deviation, etc.)",
+    "content": "1. Validate input: if the list is empty, return 0.0 (or the statistic's identity value) to avoid division by zero.\n2. First pass — compute the center point: mean = sum(numbers) / len(numbers). Use a single sum() call; do not recompute the mean inside the loop.\n3. Second pass — for each element, compute deviation = x - mean, apply the required transform (abs for MAD, square for variance/std), and aggregate with sum() over a generator expression.\n4. Normalize: divide the aggregated result by len(numbers) (use n-1 only if an unbiased sample estimator is explicitly required).\n5. Return the float result.\nEdge cases: empty list -> 0.0; single element -> 0.0 (no spread); large lists -> prefer generator expressions over building intermediate lists to save memory.\nValidation: ensure input is a sequence of numbers; guard len(numbers) == 0 before any division.",
+    "source_task_id": "HumanEval/4",
+    "sequence_index": 2
+  },
+  {
+    "id": "skl-51eecae3730c",
+    "name": "max-nesting-depth-counter",
+    "description": "When you need to find the maximum nesting depth of balanced delimiters (parentheses, brackets, tags) in a string or token stream, possibly across multiple groups separated by a delimiter.",
+    "content": "Method: Initialize current_depth=0 and max_depth=0. Iterate through each character/token. On an opening delimiter, increment current_depth and set max_depth = max(max_depth, current_depth). On a closing delimiter, decrement current_depth. If the input contains multiple independent groups (e.g., separated by spaces), split first, then run the counter per group, collecting one result per group.\n\nEdge cases: Empty/whitespace input yields depth 0. A group with no delimiters yields 0. Multiple groups separated by spaces should each produce their own max-depth value.\n\nValidation: For well-formed input, current_depth must return to 0 at the end of each group. If current_depth ever goes negative, the group has more closers than openers (malformed). If current_depth > 0 at the end, the group is unbalanced (unclosed openers). Decide whether to raise, skip, or still report max_depth depending on the problem contract.",
+    "source_task_id": "HumanEval/6",
+    "sequence_index": 3
+  },
+  {
+    "id": "skl-b361bed8aef7",
+    "name": "identity-value-empty-collection",
+    "description": "When computing aggregate values (sum, product, min, max, etc.) over collections that may be empty, initialize accumulators with the operation's identity element so empty collections are handled naturally without special-case branching.",
+    "content": "1. Identify the operation and its identity element: sum→0, product→1, min→+inf, max→-inf, string concat→'', set union→∅.\n2. Initialize the accumulator(s) with the identity value(s).\n3. Iterate over the collection, applying the operation to update the accumulator.\n4. Return the accumulator — empty collections automatically yield the identity value.\n\nEdge cases:\n- Empty collection returns the identity value (correct by construction, no branching needed).\n- Single-element collection works naturally.\n- Negative numbers in a product: identity still 1; result sign depends on count of negatives.\n- Large products may overflow — consider modular arithmetic or big-int support if required.\n\nValidation:\n- Assert empty input returns identity value(s).\n- Assert single-element input returns that element.\n- Assert multi-element input matches a manually computed result.",
+    "source_task_id": "HumanEval/8",
+    "sequence_index": 4
+  },
+  {
+    "id": "skl-66a0110abcb1",
+    "name": "shortest-palindrome-from-prefix",
+    "description": "When you need to construct the shortest palindrome that begins with a given string by finding the longest palindromic suffix and appending the reverse of the preceding prefix.",
+    "content": "Method: 1) Iterate i from 0 to len(string). 2) At each i, test whether string[i:] is a palindrome (compare to its reverse). 3) The first i where the suffix is a palindrome marks the longest palindromic suffix. 4) Return string + string[:i][::-1], i.e., append the reverse of the prefix that comes before the palindromic suffix. Edge cases: empty string returns empty string; a string that is already a palindrome returns itself (i=0, prefix is empty). Validation: confirm the result starts with the original string and that the result is itself a palindrome.",
+    "source_task_id": "HumanEval/10",
+    "sequence_index": 5
+  },
+  {
+    "id": "skl-930e632cf116",
+    "name": "closest-pair-by-sorting",
+    "description": "Applies when you need to find the two elements in a collection that are closest in value (minimum absolute difference). Works for any comparable numeric type.",
+    "content": "Method:\n1. Sort the collection in ascending order.\n2. Initialize the minimum difference to infinity and the closest pair to the first two sorted elements.\n3. Iterate over adjacent pairs in the sorted list (indices i and i+1).\n4. Compute the difference (sorted[i+1] - sorted[i]); since the list is sorted this is non-negative, so no abs() needed.\n5. If the difference is strictly less than the current minimum, update the minimum and store the pair as (sorted[i], sorted[i+1]).\n6. Return the stored pair; it is already in (smaller, larger) order due to sorting.\n\nKey insight: After sorting, the globally closest pair must be adjacent, reducing the search from O(n^2) to O(n log n).\n\nEdge cases:\n- Duplicate values: difference of 0, correctly selected as the minimum.\n- Exactly two elements: loop runs once, returns those two.\n- Ties: using strict '<' keeps the first-encountered (leftmost) pair, which is deterministic.\n- Negative numbers: sorting handles them; differences remain non-negative.\n\nValidation:\n- Input list must have length >= 2; otherwise raise or handle explicitly.\n- Elements must be mutually comparable and support subtraction.",
+    "source_task_id": "HumanEval/20",
+    "sequence_index": 10
+  },
+  {
+    "id": "skl-5f4b9327d51e",
+    "name": "invert-rotation-transform",
+    "description": "Applies when you need to write a decode/inverse function for a string transformation that groups characters and applies a cyclic rotation. Also applies to any problem requiring the inverse of a per-group permutation.",
+    "content": "Method:\n1. Reproduce the same grouping logic from the encode function (same group size, same splitting).\n2. For each group, apply the inverse permutation of the encode step.\n3. For a left-rotation encode `group[1:] + group[0]` (first char moves to end), the inverse is a right-rotation: `group[-1] + group[:-1]` (last char moves to front).\n4. Keep groups smaller than the rotation length unchanged, matching the encode function's guard condition.\n5. Join and return.\n\nEdge cases:\n- Strings shorter than the group size: no transformation needed; return as-is.\n- Groups with length not evenly divisible by group size: the final partial group is left unrotated by both encode and decode.\n- Empty string: return empty string.\n\nValidation:\n- Verify round-trip correctness: `decode_cyclic(encode_cyclic(s)) == s` for arbitrary strings.\n- Confirm the inverse permutation is truly the mathematical inverse by testing on all permutations of a 3-character group.",
+    "source_task_id": "HumanEval/38",
+    "sequence_index": 19
+  },
+  {
+    "id": "skl-5a355a12ede4",
+    "name": "iterative-linear-recurrence",
+    "description": "Applies when computing the n-th term of a sequence defined by a linear recurrence relation without using recursion.",
+    "content": "Method:\n1. Identify the base cases for the sequence up to the order of the recurrence (e.g., order k means indices 0 to k-1).\n2. If the input n falls within the base cases, return the precomputed value.\n3. Initialize variables with the base case values.\n4. Loop from the first index after the base cases up to n. In each iteration, update the variables in parallel using tuple unpacking to shift the window and compute the new term using the recurrence relation (e.g., `a, b, c, d = b, c, d, a + b + c + d`).\n5. Return the variable holding the most recently computed term.\n\nEdge Cases:\n- n is smaller than the order of the recurrence (handled by base case lookup).\n- n is exactly the first index after the base cases (loop runs once).\n\nValidation:\n- Verify base case outputs.\n- Verify the first few computed terms against manual calculation.",
+    "source_task_id": "HumanEval/46",
+    "sequence_index": 23
+  },
+  {
+    "id": "skl-b3249bd25ee3",
+    "name": "find-minimum-with-condition-and-first-index-tiebreak",
+    "description": "Applies when scanning an array to find the minimum element satisfying a predicate, returning both the value and its index, with ties broken by smallest (first) index. Also handles empty input or no-qualifying-element cases by returning a sentinel/empty result.",
+    "content": "Method:\n1. Initialize tracking variables: best_value = None, best_index = None (or a sentinel like infinity).\n2. Iterate the array with explicit index i and element x.\n3. For each x satisfying the predicate (e.g., x % 2 == 0 for evenness):\n   - If best_value is None OR x < best_value (strict less-than, NOT <=): set best_value = x, best_index = i.\n   - If x == best_value: do nothing — this preserves the first-occurrence tie-break.\n4. After the loop, if best_value is None return the empty/sentinel result; otherwise return [best_value, best_index].\n\nEdge cases:\n- Empty array → return [] (or sentinel).\n- No element satisfies the predicate → return [] (or sentinel).\n- Zero counts as even (0 % 2 == 0) and is a valid minimum candidate.\n- Duplicate minimum values → first index wins, enforced by using strict '<' so later equal values never overwrite.\n- Negative numbers: if allowed, the same strict '<' logic still yields the true minimum.\n\nValidation:\n- Confirm the predicate is applied consistently to every element.\n- Confirm the update uses strict '<' so first-occurrence tie-break holds.\n- Confirm the empty/no-match path returns the required sentinel (e.g., []) rather than None or a partial pair.\n- Optionally assert result[1] maps to the actual index of result[0] in the input.",
+    "source_task_id": "HumanEval/68",
+    "sequence_index": 34
+  },
+  {
+    "id": "skl-63d318e497c2",
+    "name": "two-pointer-interleave-ends",
+    "description": "When you need to interleave elements from both ends of a sorted sequence, such as alternating minimum and maximum values.",
+    "content": "1. Sort the input list if the interleaving requires ordered elements (e.g., min, max, 2nd min, 2nd max).\n2. Initialize two pointers: `left` at 0 and `right` at `len(list) - 1`.\n3. While `left <= right`:\n   a. Append the element at `left` to the result, then increment `left`.\n   b. Check if `left <= right`. If so, append the element at `right` to the result, then decrement `right`.\n4. Edge cases: Empty list or single-element list. The `left <= right` condition handles these naturally.\n5. Validation: Ensure the length of the result matches the length of the input list.",
+    "source_task_id": "HumanEval/70",
+    "sequence_index": 35
+  },
+  {
+    "id": "skl-7e547ce6169a",
+    "name": "compare-by-aggregate",
+    "description": "When you need to compare two collections (e.g., lists) and return the one with a smaller aggregate value (e.g., total length, sum, count), with tie-breaking favoring the first collection.",
+    "content": "1. Define an aggregate function that computes a numeric value from a collection (e.g., sum of string lengths: sum(len(s) for s in collection)).\n2. Compute the aggregate for both collections.\n3. If the first collection's aggregate is less than or equal to the second's, return the first collection; otherwise return the second.\n\nEdge cases:\n- Empty collections: aggregate is 0 (or identity value).\n- Ties: return the first collection as specified.\n- Non-numeric or invalid elements: ensure the aggregate function handles them or validate inputs beforehand.\n\nValidation:\n- Check that inputs are collections (e.g., lists) and elements are of the expected type (e.g., strings) if required.\n- Ensure the aggregate function returns a comparable numeric value.",
+    "source_task_id": "HumanEval/74",
+    "sequence_index": 37
+  },
+  {
+    "id": "skl-758bff87d4d9",
+    "name": "sliding-window-uniqueness-check",
+    "description": "When you need to verify that every consecutive window of k elements in a sequence contains all distinct elements (e.g., checking no repeats in any window of size k).",
+    "content": "Method:\n1. If the sequence length is less than k, return False immediately.\n2. Iterate i from 0 to len(seq) - k (inclusive).\n3. For each window seq[i:i+k], convert to a set; if len(set) < k, the window has duplicates — return False.\n4. If the loop completes without returning False, return True.\n\nEdge cases:\n- Empty or too-short sequence: return False.\n- Sequence length exactly k: check the single window.\n- k == 1: trivially True for any non-empty sequence.\n- Non-hashable elements: use a manual pairwise/nested comparison instead of set.\n\nValidation:\n- Ensure k is a positive integer.\n- Ensure the input supports len() and slicing (list, str, tuple).",
+    "source_task_id": "HumanEval/80",
+    "sequence_index": 40
+  },
+  {
+    "id": "skl-fb2f795369ee",
+    "name": "running-total-early-exit",
+    "description": "Applies when processing a sequence of values where a running total must be checked against a threshold, and an early exit is needed if the threshold is crossed.",
+    "content": "1. Initialize a running total variable (e.g., balance = 0).\n2. Iterate through the sequence of operations.\n3. Update the running total by adding the current element.\n4. Check if the running total meets the condition (e.g., < 0). If so, return the desired result immediately.\n5. If the loop finishes without triggering the condition, return the default result.\nEdge cases: Empty sequence returns the default result. Ensure the running total is updated before checking the condition.",
+    "source_task_id": "HumanEval/3",
+    "sequence_index": 1
+  },
+  {
+    "id": "skl-21581549a2df",
+    "name": "token-mapping-parse",
+    "description": "Applies when parsing a delimited string where each token maps to a fixed value via a lookup table.",
+    "content": "1. Define a dict mapping each token to its target value.\n2. Split the input string on the delimiter (e.g., whitespace).\n3. For each token, look up its value in the dict.\n4. Return the list of mapped values.\nEdge cases: empty/whitespace-only string returns an empty list (filter out empty splits); unknown token raises KeyError or is explicitly handled.\nValidation: confirm output length equals the number of real tokens; confirm every returned value is in the expected value set.",
+    "source_task_id": "HumanEval/17",
+    "sequence_index": 8
+  },
+  {
+    "id": "skl-a8f915b7cd92",
+    "name": "sort-by-mapping-key",
+    "description": "Applies when items are in a non-standard representation (words, symbols, codes) that need to be sorted by their natural order, but lack a native comparison.",
+    "content": "Method: (1) Define a mapping dict from each item's representation to a sortable value (numeric or comparable). (2) Split/tokenize the input into individual items. (3) Call sorted(items, key=lambda x: mapping[x]) to order by mapped value. (4) Rejoin sorted items using the original delimiter/format. Edge cases: empty input yields empty output (split()->[], join->''); single item returns unchanged; duplicates are preserved; items missing from the mapping raise KeyError—validate membership first if input is untrusted. Validation: confirm every token exists in the mapping before sorting; ensure output delimiter matches input format; verify stable order for equal keys when needed.",
+    "source_task_id": "HumanEval/19",
+    "sequence_index": 9
+  },
+  {
+    "id": "skl-5e11e8c2f0fb",
+    "name": "min-max-normalization",
+    "description": "Applies when you need to rescale a list of numeric values to a target range (commonly [0,1]) via a linear transform, such as feature scaling or data preprocessing.",
+    "content": "Method: 1) Compute min_val = min(numbers) and max_val = max(numbers). 2) If max_val == min_val, return a list of zeros (or the lower bound) of the same length to avoid division by zero. 3) Otherwise, for each x return (x - min_val) / (max_val - min_val). For a general target range [a,b], use a + (x - min_val) * (b - a) / (max_val - min_val). Edge cases: all values equal (constant list) -> return all zeros or all a; single element is invalid for this transform (require >=2 elements); handle empty list by returning empty. Validation: ensure input is non-empty numeric iterable; confirm max_val - min_val != 0 before dividing; verify output values lie within [0,1] (or [a,b]).",
+    "source_task_id": "HumanEval/21",
+    "sequence_index": 10
+  },
+  {
+    "id": "skl-89773920c4a2",
+    "name": "prime-factorization-trial-division",
+    "description": "When you need to compute the prime factorization of a positive integer, returning each prime factor as many times as it appears, in ascending order.",
+    "content": "Method:\n1. Initialize an empty list for factors.\n2. Start with divisor d = 2.\n3. While d * d <= n:\n   a. While n % d == 0: append d to factors, n = n // d.\n   b. Increment d by 1.\n4. If n > 1, append the remaining n (which is prime).\n5. Return the factors list.\n\nEdge cases:\n- n = 1 returns an empty list.\n- n is prime returns [n].\n- n = 0 or negative values are not handled (assume positive integer input).\n\nValidation:\n- Ensure input is a positive integer.\n- Verify that the product of all returned factors equals the original number.\n- Confirm all factors are prime and sorted in ascending order.",
+    "source_task_id": "HumanEval/25",
+    "sequence_index": 12
+  },
+  {
+    "id": "skl-561acc9711cb",
+    "name": "index-subset-transform",
+    "description": "Applies when you need to transform only the elements at indices matching a pattern (e.g., even/odd indices) while leaving all other elements unchanged.",
+    "content": "1. Identify the index pattern (e.g., even indices: range(0, len(l), 2); odd: range(1, len(l), 2)). 2. Extract the subset of elements at those indices into a separate list. 3. Apply the desired transformation (sort, reverse, map, etc.) to the subset. 4. Copy the original list to avoid mutation. 5. Write the transformed values back into the copied list at the same index positions using zip(pattern_indices, transformed_subset). 6. Return the reconstructed list. Edge cases: empty list or single-element list should return unchanged; verify the subset length matches the number of target indices before writing back.",
+    "source_task_id": "HumanEval/37",
+    "sequence_index": 18
+  },
+  {
+    "id": "skl-3728a68e4818",
+    "name": "pair-sum-with-hashset",
+    "description": "Use when checking if a list contains two distinct elements that sum to a target value (e.g., zero) in O(n) time.",
+    "content": "1. Initialize an empty set to track seen elements.\n2. Iterate through the list elements.\n3. For each element, calculate the complement (target - element).\n4. Check if the complement exists in the seen set. If yes, a valid pair is found.\n5. Add the current element to the seen set.\n6. If the loop completes without finding a complement, return False.\nEdge cases: Lists with fewer than 2 elements automatically return False. Checking the complement before adding the current element ensures the same element is not used twice (e.g., if the element is exactly half the target and appears only once).\nValidation: Verify the function returns a boolean. Ensure the complement check happens before insertion.",
+    "source_task_id": "HumanEval/43",
+    "sequence_index": 21
+  },
+  {
+    "id": "skl-961eed6ce6ad",
+    "name": "sliding-window-linear-recurrence",
+    "description": "Applies when computing the n-th term of a linear recurrence relation (e.g., Fibonacci, Tribonacci) efficiently in O(n) time and O(1) space.",
+    "content": "Method:\n1. Identify the order `k` of the recurrence and define base cases for `n < k`. Return the appropriate base case directly.\n2. Initialize a sliding window of `k` variables (e.g., `a, b, c = 0, 0, 1`) representing the most recent `k` terms of the sequence.\n3. Iterate from `k` to `n` (inclusive). In each iteration, compute the next term as a linear combination of the current window variables, then shift the window forward by assigning the new term to the last variable and cascading the others.\n4. Return the last variable in the window.\nEdge Cases: `n` is a base case; `n` is negative (raise ValueError or handle as base case).\nValidation: Ensure the loop range is `range(k, n + 1)` to execute exactly `n - k + 1` times. Verify the update step correctly matches the recurrence relation (e.g., `a, b, c = b, c, a + b + c`).",
+    "source_task_id": "HumanEval/63",
+    "sequence_index": 31
+  },
+  {
+    "id": "skl-e01da04cfc6e",
+    "name": "extract-and-sum-numbers-from-text",
+    "description": "When you need to extract all numbers from a string, sum them, and subtract from a given total.",
+    "content": "1. Use `re.findall(r'\\d+', text)` to extract all numeric substrings from the text.\n2. Convert the extracted strings to integers.\n3. Sum the extracted integers.\n4. Subtract the sum from the given total.\n5. Edge cases: Handle strings with no numbers (sum will be 0).",
+    "source_task_id": "HumanEval/67",
+    "sequence_index": 33
+  },
+  {
+    "id": "skl-a6f8ccfe78a7",
+    "name": "frequency-threshold-filter",
+    "description": "Applies when you need to find the max/min element in a collection whose occurrence count satisfies a condition relative to the element's own value (e.g., frequency >= value), returning a sentinel if none qualifies.",
+    "content": "Method:\n1. Build a frequency map by iterating the input once (dict.get with default 0).\n2. Iterate over frequency.items(); for each (element, count) test the threshold condition relating count to the element.\n3. Track the best candidate (max or min per requirement) among those that pass.\n4. If no candidate passed, return the sentinel (e.g., -1).\n\nEdge cases:\n- No element satisfies the condition → return sentinel.\n- Duplicate elements handled inherently by the frequency map.\n- Negative or zero elements: confirm whether the problem restricts to positive integers; adjust the condition guard accordingly.\n- Single-element list: still works since the map has one entry.\n\nValidation:\n- Confirm frequency counts sum to len(input).\n- Confirm the comparison operator and direction (>=, >, <=) match the spec.\n- Confirm the sentinel is only returned when the candidate variable was never updated.",
+    "source_task_id": "HumanEval/69",
+    "sequence_index": 34
+  },
+  {
+    "id": "skl-71e7719db741",
+    "name": "herons-formula-triangle-area",
+    "description": "Applies when calculating the area of a triangle given the lengths of its three sides.",
+    "content": "1. Validate the triangle using the Triangle Inequality Theorem: the sum of any two sides must be strictly greater than the third side (a + b > c, a + c > b, b + c > a). If invalid, return the specified fallback value (e.g., -1).\n2. Calculate the semi-perimeter: s = (a + b + c) / 2.\n3. Calculate the area using Heron's formula: area = sqrt(s * (s - a) * (s - b) * (s - c)).\n4. Round the result to the required decimal places (e.g., 2).\nEdge Cases: Degenerate triangles (sum of two sides equals the third), negative or zero side lengths.",
+    "source_task_id": "HumanEval/71",
+    "sequence_index": 35
+  },
+  {
+    "id": "skl-3792e529bea9",
+    "name": "count-palindrome-mismatches",
+    "description": "Applies when you need the minimum number of single-element edits to make a sequence palindromic, or when counting mismatched symmetric pairs in a sequence/array/string.",
+    "content": "Method: Iterate i from 0 to n//2 (exclusive). For each i, compare arr[i] with arr[n-1-i]; if they differ, increment a counter. Return the counter, since each mismatched pair needs exactly one change (one element can be rewritten to match the other). Edge cases: empty array or single-element array returns 0; odd-length arrays skip the middle element automatically because the loop runs only n//2 times. Validation: the result must be in [0, n//2]; pairs are independent so no double-counting occurs.",
+    "source_task_id": "HumanEval/73",
+    "sequence_index": 36
+  },
+  {
+    "id": "skl-78e41a9e0c6c",
+    "name": "decimal-to-binary-conversion",
+    "description": "When converting a decimal integer to its binary string representation, potentially with specific formatting or wrapping.",
+    "content": "1. Use the built-in `bin()` function on the integer to get a binary string prefixed with '0b'.\n2. Remove the prefix by slicing the string from index 2 (`[2:]`).\n3. Apply any required string formatting, such as wrapping with specific characters or padding with leading zeros using `.zfill()`.\n\nEdge Cases:\n- Zero: `bin(0)[2:]` correctly returns '0'.\n- Negative numbers: `bin()` includes a minus sign (e.g., '-0b101'). If only the magnitude is needed, use `abs()` first. If two's complement is needed, use bitwise operations (e.g., `format(x & 0xFFFFFFFF, '032b')`).\n\nValidation:\n- Check that the resulting string (after removing any formatting characters) consists solely of '0' and '1'.",
+    "source_task_id": "HumanEval/79",
+    "sequence_index": 39
+  },
+  {
+    "id": "skl-5e8580e542ae",
+    "name": "threshold-based-mapping",
+    "description": "Applies when converting numerical values to categorical labels using a table of thresholds with exact-match boundaries and strict inequality ranges.",
+    "content": "Method:\n1. Define thresholds in descending order, pairing each boundary with its label. Distinguish exact-match boundaries (e.g., 4.0 → 'A+', 0.0 → 'E') from strict-greater-than ranges (e.g., > 3.7 → 'A').\n2. For each input value, evaluate conditions from highest threshold to lowest.\n3. Check exact-match boundaries with equality (==) before range checks (>) so boundary values are not misclassified.\n4. Return the label for the first matching condition; iterate over all inputs and collect results into a list.\n\nEdge Cases:\n- Exact boundary values (e.g., 4.0 and 0.0) must be handled with equality checks, not inequalities, to avoid falling through to the wrong category.\n- Values outside the defined range (e.g., > 4.0 or negative) should either be clamped, raise an error, or be assigned a default—decide based on requirements.\n- Empty input list should return an empty list.\n- Floating-point comparisons: use direct comparison for exact boundaries since the thresholds are clean decimals.\n\nValidation:\n- Confirm input is a list of numeric values.\n- Confirm each value falls within the expected domain; raise or handle if outside.\n- Verify that every possible value in the domain maps to exactly one label (no gaps, no overlaps).",
+    "source_task_id": "HumanEval/81",
+    "sequence_index": 40
+  },
+  {
+    "id": "skl-627cd38fbeb9",
+    "name": "jagged-2d-coordinate-search",
+    "description": "Applies when searching a nested list (jagged 2D structure, not a uniform matrix) for all occurrences of a value and returning (row, col) coordinates sorted with a primary key ascending and secondary key descending.",
+    "content": "Method: 1) Iterate the outer list with enumerate to get row index i. 2) For each row, build a list of column indices j where row[j] equals the target using a comprehension with enumerate. 3) Sort that column list with reverse=True to get descending column order within the row. 4) Append (i, j) tuples to the result in row order. This naturally yields primary-ascending (rows) and secondary-descending (columns) ordering without a custom comparator. Edge cases: empty outer list returns []; rows that are empty contribute nothing; target absent returns []; duplicate values in a row each produce a coordinate. Validation: ensure input is a list of lists; ensure target is comparable to element types; do not assume equal row lengths.",
+    "source_task_id": "HumanEval/87",
+    "sequence_index": 43
+  },
+  {
+    "id": "skl-d0bec6321016",
+    "name": "alphabet-rotation-shift",
+    "description": "When you need to shift/rotate alphabetic characters by a fixed number of positions with wrap-around (e.g., Caesar cipher, alphabet rotation)",
+    "content": "Method: 1) Iterate through each character in the input string. 2) For lowercase letters (a-z), compute shifted = ord(char) + shift_amount. 3) If shifted > ord('z'), subtract 26 to wrap around. 4) For uppercase letters (A-Z), apply the same logic using ord('Z') as the upper bound. 5) Non-alphabetic characters are preserved unchanged. 6) Collect results in a list and join into a string. Edge cases: wrap-around (e.g., 'z' shifted by 4 becomes 'd'); non-alphabetic characters preserved as-is; empty string returns empty string; large shift values should use modulo 26 (shift = shift % 26) to normalize. Validation: confirm input is a string; confirm shift is an integer.",
+    "source_task_id": "HumanEval/89",
+    "sequence_index": 44
+  },
+  {
+    "id": "skl-6fc881f529b1",
+    "name": "count-segments-starting-with-token",
+    "description": "Applies when you need to count text segments (delimited by one or more punctuation/separator characters) whose first token matches a target word.",
+    "content": "Method:\n1. Normalize all delimiter characters to a single common delimiter (e.g. replace '?' and '!' with '.').\n2. Split the string on that single delimiter.\n3. For each segment: strip whitespace, then split into tokens.\n4. If the token list is non-empty and tokens[0] equals the target, increment the count.\n5. Return the count.\n\nEdge cases:\n- Empty input string → returns 0.\n- Trailing delimiter produces an empty final segment → guard with non-empty token check.\n- Leading/trailing whitespace in segments → strip before splitting.\n- Target must match exactly (e.g. 'I' vs 'I'm' or 'It') → use exact equality on the first token, not substring.\n\nValidation:\n- Confirm words list is non-empty before indexing words[0].\n- Confirm delimiter replacement covers all specified delimiters.\n- Confirm count is an integer.",
+    "source_task_id": "HumanEval/91",
+    "sequence_index": 45
+  },
+  {
+    "id": "skl-65b6fdad9d02",
+    "name": "character-level-string-transform",
+    "description": "Applies when you need to transform a string character-by-character with rules that depend on character properties (case, vowel/consonant, etc.) and may involve alphabet arithmetic (shifting letters by N positions).",
+    "content": "Method: (1) Iterate over each character in the input string. (2) For each character, check its properties (isalpha, islower, isupper, membership in a set like vowels). (3) Apply transformation rules in a defined order (e.g., swap case first, then conditionally replace). (4) For alphabet shifts, compute the base character ('a' or 'A') based on the target case, then use chr(ord(base) + (ord(char) - ord(base) + shift) % 26) to wrap around the alphabet. (5) Append transformed character to a result list and join at the end. Edge cases: non-alpha characters should be passed through unchanged; handle wrap-around for shifts near 'z'/'Z' using modulo 26; preserve original case logic when chaining multiple transforms. Validation: test with mixed-case input, input with no vowels, input with vowels at alphabet end (to verify wrap-around), and input with non-alpha characters.",
+    "source_task_id": "HumanEval/93",
+    "sequence_index": 46
+  },
+  {
+    "id": "skl-274ebe46c143",
+    "name": "uniform-collection-property-check",
+    "description": "When you need to verify that all elements in a collection share one of several uniform property states (e.g., all lowercase OR all uppercase, all same type).",
+    "content": "1. Handle the empty-collection edge case first by returning the specified default (often False).\n2. Validate that every element is of the expected type using `all(isinstance(x, T) for x in items)`; short-circuit to False if any element fails.\n3. For each candidate uniform state, compute a boolean via `all(predicate(x) for x in items)`.\n4. Return the disjunction (logical OR) of the candidate-state booleans so the check passes only when the entire collection conforms to exactly one uniform state.\n5. Edge cases: empty input, mixed types, elements where the predicate is ambiguous (e.g., empty strings where `islower()`/`isupper()` both return False).\n6. Validation: confirm predicates are applied to every element and that type-checking precedes property-checking to avoid attribute errors on non-string elements.",
+    "source_task_id": "HumanEval/95",
+    "sequence_index": 47
+  },
+  {
+    "id": "skl-6393ea5c8161",
+    "name": "round-half-away-from-zero",
+    "description": "Applies when you need to round a number to the nearest integer with ties (exactly .5) broken by rounding away from zero, rather than Python's default banker's rounding (round half to even).",
+    "content": "1. Convert the input (string or number) to a float.\n2. Branch on sign: if num >= 0, return int(num + 0.5); if num < 0, return int(num - 0.5). Adding/subtracting 0.5 before truncation shifts the tie-break so .5 rounds away from zero.\n3. Edge cases: pure integer strings/numbers pass through unchanged (e.g., '10' -> 10.0 + 0.5 -> int 10). Leading/trailing whitespace is handled by float(). Very large magnitudes may lose precision due to float representation.\n4. Validation: ensure the input is a valid numeric string or number; reject NaN/inf if they are not acceptable inputs.",
+    "source_task_id": "HumanEval/99",
+    "sequence_index": 49
+  },
+  {
+    "id": "skl-9f83b57ea6ca",
+    "name": "filter-sort-reverse-map-pipeline",
+    "description": "Applies when transforming an array through a sequence of steps: filter to valid elements, sort, reverse, and map each element to a corresponding value via a lookup table.",
+    "content": "1. Filter: retain only elements satisfying a validity condition (e.g., within an inclusive range) using a list comprehension.\n2. Sort: call .sort() on the filtered list (in-place ascending).\n3. Reverse: call .reverse() on the sorted list, or use sorted(filtered, reverse=True) to combine steps 2–3.\n4. Map: build a dictionary lookup table and use a list comprehension to replace each element with its mapped value.\n5. Edge cases: empty input returns empty list; out-of-range or invalid elements are silently dropped by the filter step.\n6. Validation: confirm the filter condition is inclusive on both bounds; ensure every possible filtered value has a corresponding key in the lookup table.",
+    "source_task_id": "HumanEval/105",
+    "sequence_index": 52
+  },
+  {
+    "id": "skl-05bfe2713388",
+    "name": "palindrome-detection-via-string-reversal",
+    "description": "When you need to check whether a number, string, or sequence reads the same forwards and backwards, or to count/filter palindromes within a range.",
+    "content": "Method: Convert the value to a string (if not already), then compare it to its reverse using slicing: s == s[::-1]. For counting palindromes in a range [1, n], iterate i from 1 to n inclusive, apply the check, and accumulate counts. Edge cases: single-character strings are always palindromes; empty strings are palindromes; negative numbers' minus sign breaks symmetry so they are not palindromes. Validation: ensure the input is convertible to a string; for range-based tasks confirm the upper bound is inclusive or exclusive as required.",
+    "source_task_id": "HumanEval/107",
+    "sequence_index": 53
+  },
+  {
+    "id": "skl-c1dec9e5b1a6",
+    "name": "rotated-sorted-check",
+    "description": "When you need to determine if an array is a rotation of a sorted (non-decreasing) array, or equivalently, if an array can be sorted by performing only cyclic right/left shift operations.",
+    "content": "Method:\n1. If the array is empty or has one element, return True immediately.\n2. Iterate through the array and count the number of 'break points' — indices i where arr[i] > arr[(i+1) % n], using modular arithmetic to include the wraparound comparison from the last element to the first.\n3. If the break-point count is <= 1, the array is a rotation of a sorted array: return True. Otherwise return False.\n\nKey insight: A sorted-then-rotated array has at most one position where the sequence decreases. The wraparound comparison catches the rotation seam.\n\nEdge cases:\n- Empty array: return True.\n- Single element: return True (count is 0).\n- Already sorted (no rotation): count is 0, return True.\n- Fully rotated back to sorted: count is 0, return True.\n- Two or more decreases: impossible to fix with shifts, return False.\n\nValidation:\n- Works for arrays with unique elements as specified; for duplicate elements the condition arr[i] > arr[i+1] (strict) still correctly identifies non-decreasing rotations.\n- Ensure modular index (i+1) % n is used so the last-to-first comparison is included.",
+    "source_task_id": "HumanEval/109",
+    "sequence_index": 54
+  },
+  {
+    "id": "skl-9c85137da3a5",
+    "name": "filter-max-frequency",
+    "description": "When you need to find items with the highest frequency/count from a collection and return all ties",
+    "content": "Method:\n1. Count frequencies using collections.Counter (or manual dict accumulation).\n2. Guard the empty case: if the frequency map is empty, return an empty container immediately.\n3. Compute max_count = max(freq_map.values()).\n4. Filter the map to only entries whose value equals max_count (e.g. dict comprehension).\n\nEdge cases:\n- Empty input -> return {} (avoid calling max() on empty values).\n- All items tie -> return all of them.\n- Single item -> return that item alone.\n- Whitespace-only or repeated separators -> split() naturally collapses them.\n\nValidation:\n- Every returned value must equal max_count.\n- No item with count < max_count should appear.\n- Empty input must not raise ValueError from max().",
+    "source_task_id": "HumanEval/111",
+    "sequence_index": 55
+  },
+  {
+    "id": "skl-e399aff0deb4",
+    "name": "ceiling-integer-division",
+    "description": "when you need to compute how many fixed-capacity batches, trips, or chunks are required to cover a total quantity (e.g., bucket trips to empty a well, page count for items, container count for items)",
+    "content": "Method: compute batches = (total + capacity - 1) // capacity using integer arithmetic, which avoids floating-point rounding issues. Equivalently math.ceil(total / capacity) when float precision is acceptable. Apply per-group when groups are independent (e.g., per row/well), then sum. Edge cases: total=0 yields 0 batches; capacity must be positive (guard with assert capacity > 0); for per-group problems, empty groups contribute 0. Validation: confirm capacity > 0; confirm result is 0 when total is 0; confirm result equals 1 when 0 < total <= capacity.",
+    "source_task_id": "HumanEval/115",
+    "sequence_index": 57
+  },
+  {
+    "id": "skl-c497ab2ebe6d",
+    "name": "filter-words-by-character-count",
+    "description": "Applies when you need to split a string into words and return only those words containing exactly n characters of a specific category (e.g., consonants, vowels, digits, uppercase).",
+    "content": "Method:\n1. Guard for empty input: return [] immediately if the string is falsy.\n2. Split the string on whitespace to get ordered words.\n3. Define a set or predicate identifying the target character category (e.g., vowels = set('aeiouAEIOU'); consonant = char.isalpha() and char not in vowels).\n4. For each word, count characters matching the category.\n5. Append the word to the result list when the count equals the target n.\n6. Return the result list, preserving original word order.\n\nEdge cases:\n- Empty string -> return [].\n- Words with zero target characters and n == 0 should be included.\n- Mixed case: normalize category checks to handle both cases (e.g., include both 'a' and 'A' in vowel set).\n- Non-letter characters: decide whether to ignore them or count them; for consonant counting, restrict to alphabetic non-vowel characters.\n- Multiple spaces: split() handles consecutive spaces and trims leading/trailing whitespace.\n\nValidation:\n- Confirm n is a non-negative integer.\n- Confirm input is a string.\n- Verify the category predicate/set is defined before the counting loop.\n- Ensure original word order is preserved in the output.",
+    "source_task_id": "HumanEval/117",
+    "sequence_index": 58
+  },
+  {
+    "id": "skl-52ec941923d8",
+    "name": "balanced-parentheses-check",
+    "description": "when you need to determine if a string consisting of '(' and ')' is balanced",
+    "content": "Method: 1. Initialize a balance counter to 0. 2. Iterate through each character in the string. 3. For '(' increment balance by 1; for ')' decrement balance by 1. 4. If balance becomes negative at any step, return False immediately. 5. After processing all characters, return True if balance is 0, else False. Edge cases: empty string is balanced (returns True); a string with only opening parentheses is not balanced; a string with only closing parentheses is not balanced; a string that never goes negative but ends with non-zero balance is not balanced. Validation: test with '()' -> True, '(())' -> True, '())' -> False, ')(' -> False, '' -> True.",
+    "source_task_id": "HumanEval/119",
+    "sequence_index": 59
+  },
+  {
+    "id": "skl-577a91965756",
+    "name": "collatz-sequence-generation",
+    "description": "Applies when you need to generate the Collatz sequence for a positive integer, or filter/extract elements (e.g., odd numbers) from that sequence.",
+    "content": "Method: (1) Start with the given positive integer n. (2) Loop while n != 1: if n is odd, optionally record it then set n = 3*n + 1; if n is even, set n = n // 2. (3) Always append 1 at the end since the sequence terminates at 1. (4) If a filtered/sorted result is needed, apply the filter during generation and sort before returning.\n\nEdge cases: n = 1 returns [1] directly (the loop body never executes, so manually append 1). The conjecture guarantees termination for all positive integers, but guard against non-positive input.\n\nValidation: Input must be a positive integer. The result must always contain 1 as the final element of the sequence. For filtered results, verify no even numbers leak into an odd-only list.",
+    "source_task_id": "HumanEval/123",
+    "sequence_index": 61
+  },
+  {
+    "id": "skl-06ca5dada471",
+    "name": "is-prime",
+    "description": "Use this skill to check if a non-negative integer is a prime number.",
+    "content": "1. If the number is less than 2, it is not prime.\n2. Iterate from 2 up to the integer square root of the number (inclusive), i.e., `range(2, int(n**0.5) + 1)`.\n3. If the number is divisible by any of these integers (`n % i == 0`), it is not prime.\n4. If no divisors are found, it is prime.\nEdge cases: Numbers less than 2 (0, 1, and negative numbers) are not prime. 2 is prime.\nValidation: Ensure the input is an integer. The upper bound of the loop must be `int(n**0.5) + 1` to correctly check the square root.",
+    "source_task_id": "HumanEval/127",
+    "sequence_index": 63
+  },
+  {
+    "id": "skl-56212d4356b5",
+    "name": "ceiling-round-and-aggregate",
+    "description": "Applies when you need to round numbers up to the nearest integer (ceiling) and then perform arithmetic operations like squaring and summing on the results. Common in problems involving ceiling transformations on numeric lists.",
+    "content": "1. Import math and use math.ceil(x) to round each element up to the nearest integer.\n2. Combine the ceiling transform with the downstream operation (e.g., squaring) inside a generator expression passed to sum() for a single-pass solution: sum(math.ceil(x) ** 2 for x in lst).\n3. Edge cases: math.ceil on negative floats rounds toward zero (e.g., math.ceil(-2.4) == -2, not -3); math.ceil on integers returns the same integer; math.ceil(0) == 0.\n4. Validation: verify results against hand-computed examples, especially when negative floats are present, to confirm ceiling direction is correct.",
+    "source_task_id": "HumanEval/133",
+    "sequence_index": 66
+  },
+  {
+    "id": "skl-1c3d0c7a046f",
+    "name": "multi-condition-string-validation",
+    "description": "Applies when validating a string against multiple independent rules, where each rule can fail independently and the first failure determines the outcome.",
+    "content": "1. Identify all independent validation conditions the string must satisfy.\n2. Order checks from cheapest/most discriminating to most expensive, returning early on the first failure.\n3. Use built-in string methods where possible: `str.isdigit()`, `str.isalpha()`, `str.count()`, `str.split()`.\n4. For character-class checks, use range comparisons (`'a' <= c <= 'z'`) or membership tests against a set/dict for O(1) lookup.\n5. After splitting on a delimiter, always guard against empty segments before indexing.\n6. Validate membership in an allowed set using `in` against a list or set literal.\nEdge cases: empty string, missing delimiter, multiple delimiters, delimiter at start/end, case sensitivity, Unicode vs ASCII letters.\nValidation: confirm each condition is tested independently, that early returns cover every failure path, and that the success path is reached only when all conditions pass.",
+    "source_task_id": "HumanEval/141",
+    "sequence_index": 70
+  },
+  {
+    "id": "skl-88f8f46219f6",
+    "name": "check-prime-number",
+    "description": "When you need to determine if a number is prime, or filter items based on whether a numeric property (like length) is prime",
+    "content": "1. Return False for n < 2 (0 and 1 are not prime)\n2. Check divisibility from 2 to int(sqrt(n)) + 1\n3. If n % i == 0 for any i, return False\n4. If no divisor found, return True\n5. Edge cases: 2 is prime (smallest prime), negative numbers are not prime\n6. For filtering: use the prime check as a predicate in a comprehension or filter()",
+    "source_task_id": "HumanEval/143",
+    "sequence_index": 71
+  },
+  {
+    "id": "skl-ee7fd8be0043",
+    "name": "modular-residue-combinatorics",
+    "description": "When counting tuples/subsets whose sum must be divisible by m, reduce elements to residues mod m, tally per residue class, then apply combination formulas for residue groups that sum to 0 mod m.",
+    "content": "1. Reduce each element to its residue mod m (compute a[i] % m, or derive the residue pattern analytically from the closed form). 2. Count occurrences of each residue class 0..m-1. 3. Enumerate which residue multisets sum to 0 mod m: for triples with m=3 these are (0,0,0), (1,1,1), (2,2,2), (0,1,2); for pairs with m=2: (0,0),(1,1); generalize for other m and tuple sizes. 4. For each valid combination, multiply C(count_r, multiplicity_r) across the residues used. 5. Sum all contributions. 6. Edge cases: guard terms where a residue class has fewer elements than required multiplicity (use `if c >= k else 0`, or rely on C(n,k)=0 for n<k); handle n smaller than tuple size by returning 0. 7. Validate against a brute-force enumeration for small inputs.",
+    "source_task_id": "HumanEval/147",
+    "sequence_index": 73
+  },
+  {
+    "id": "skl-bfeb71879c9e",
+    "name": "filter-then-multi-key-sort",
+    "description": "Applies when you need to filter a collection by a predicate and then sort the result by multiple criteria, where primary and secondary sort keys are combined into a tuple key.",
+    "content": "1. Use a list comprehension to filter the collection, keeping only elements that satisfy the predicate (e.g., `len(s) % 2 == 0`).\n2. Call `.sort(key=lambda x: (primary_key, secondary_key))` on the filtered list, using a tuple as the key so Python sorts lexicographically by the first element, then the second.\n3. Return the sorted filtered list.\nEdge cases: empty input list returns empty list; duplicates are preserved through filtering and sorting; if all elements are filtered out, return an empty list.\nValidation: confirm the predicate is applied before sorting; confirm tuple key ordering matches desired priority (primary criterion first).",
+    "source_task_id": "HumanEval/149",
+    "sequence_index": 74
+  },
+  {
+    "id": "skl-b1cdae8f8780",
+    "name": "argmax-with-first-tiebreak",
+    "description": "Applies when you need to find the element in a list that maximizes a custom scoring function, with ties broken by earliest position in the list.",
+    "content": "Method: 1) If the list is empty, return a sensible default. 2) Initialize the best element as the first item and compute its score. 3) Iterate over the remaining elements, computing each one's score. 4) Update the best element only when the new score is strictly greater than the current max (strict > ensures first-occurrence tie-breaking). 5) Return the best element (or a derived value from it). Edge cases: empty list (return default/None); single-element list (return that element without iteration); all-equal scores (first element wins); negative scores (handled naturally since strict > still works). Validation: confirm the list is non-empty before indexing element 0; ensure the scoring function is deterministic and applies uniformly to all elements.",
+    "source_task_id": "HumanEval/153",
+    "sequence_index": 76
+  },
+  {
+    "id": "skl-85d8a87b72b6",
+    "name": "bounded-resource-consumption",
+    "description": "Applies when a consumer needs a quantity of a resource but is limited by available supply; used to compute actual consumption and updated totals.",
+    "content": "Method:\n1. Compute actual consumption as min(need, available_supply).\n2. New total consumed = previous_consumed + actual_consumption.\n3. New remaining supply = available_supply - actual_consumption.\n4. Return [new_total_consumed, new_remaining_supply].\n\nEdge cases:\n- need > remaining: consume all remaining, consumer stays unsatisfied.\n- need <= remaining: consume exactly need, full satisfaction.\n- remaining == 0: consume nothing.\n- need == 0: consume nothing, totals unchanged.\n\nValidation:\n- All inputs must be non-negative.\n- Resulting remaining must be >= 0.\n- Resulting total must be >= previous_consumed.\n- Resulting total must be <= previous_consumed + need (cannot exceed demand).",
+    "source_task_id": "HumanEval/159",
+    "sequence_index": 79
+  }
+]

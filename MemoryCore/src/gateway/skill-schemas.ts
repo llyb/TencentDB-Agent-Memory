@@ -209,6 +209,12 @@ export const listingRequestSchema = z.object({
   ...idFieldsShape,
   query: z.string().max(2048).optional(),
   char_budget: z.number().int().min(0).max(64_000).optional(),
+  scope: z.object({
+    repo: z.string().min(1).max(512).optional(),
+    path: z.string().min(1).max(2048).optional(),
+    language: z.string().min(1).max(128).optional(),
+    version: z.string().min(1).max(128).optional(),
+  }).optional(),
 }).superRefine(refineAgentNeedsTeam);
 
 /**

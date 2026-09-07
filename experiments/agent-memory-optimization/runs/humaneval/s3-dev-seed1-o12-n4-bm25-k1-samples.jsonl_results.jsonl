@@ -1,0 +1,4 @@
+{"task_id": "HumanEval/24", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/26", "completion": "\n    counts = {}\n    for num in numbers:\n        counts[num] = counts.get(num, 0) + 1\n    return [num for num in numbers if counts[num] == 1]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/28", "completion": "\nreturn ''.join(strings)", "result": "failed: 'return' outside function (<string>, line 12)", "passed": false}
+{"task_id": "HumanEval/30", "completion": "\n    return [x for x in l if x > 0]", "result": "passed", "passed": true}

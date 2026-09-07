@@ -1,0 +1,21 @@
+{"task_id":"HumanEval/84","completion":"\n    digit_sum = sum(int(d) for d in str(N))\n    return bin(digit_sum)[2:]"}
+{"task_id":"HumanEval/86","completion":"\n    return ' '.join(''.join(sorted(w)) for w in s.split(' '))"}
+{"task_id":"HumanEval/88","completion":"\n    if not array:\n        return []\n    return sorted(array, reverse=(array[0] + array[-1]) % 2 == 0)"}
+{"task_id":"HumanEval/90","completion":"\n    unique = sorted(set(lst))\n    if len(unique) < 2:\n        return None\n    return unique[1]"}
+{"task_id":"HumanEval/92","completion":"\n    if type(x) == int and type(y) == int and type(z) == int:\n        return (x == y + z) or (y == x + z) or (z == x + y)\n    return False"}
+{"task_id":"HumanEval/94","completion":"\n"}
+{"task_id":"HumanEval/96","completion":"\n"}
+{"task_id":"HumanEval/98","completion":"\ndef count_upper(s):\n    \"\"\"\n    Given a string s, count the number of uppercase vowels in even indices.\n    \n    For example:\n    count_upper('aBCdEf') returns 1\n    count_upper('abcdefg') returns 0\n    count_upper('dBBE') returns 0\n    \"\"\"\n    count = 0\n    vowels = \"AEIOU\"\n    for i in range(0, len(s), 2):\n        if s[i] in vowels:\n            count += 1\n    return count"}
+{"task_id":"HumanEval/100","completion":"\n    return [n + 2 * i for i in range(n)]"}
+{"task_id":"HumanEval/102","completion":"\n"}
+{"task_id":"HumanEval/104","completion":"\n"}
+{"task_id":"HumanEval/106","completion":"\n    res = []\n    fact = 1\n    for i in range(1, n + 1):\n        fact *= i\n        if i % 2 == 0:\n            res.append(fact)\n        else:\n            res.append(i * (i + 1) // 2)\n    return res"}
+{"task_id":"HumanEval/108","completion":"\n    count = 0\n    for num in arr:\n        s = str(num)\n        if s[0] == '-':\n            digit_sum = -int(s[1])\n            for ch in s[2:]:\n                digit_sum += int(ch)\n        else:\n            digit_sum = sum(int(ch) for ch in s)\n        if digit_sum > 0:\n            count += 1\n    return count"}
+{"task_id":"HumanEval/110","completion":"\n    odd_count = sum(1 for x in lst1 if x % 2 != 0)\n    even_count = sum(1 for x in lst2 if x % 2 == 0)\n    return \"YES\" if odd_count <= even_count else \"NO\""}
+{"task_id":"HumanEval/112","completion":"\n    chars_to_delete = set(c)\n    result = ''.join(ch for ch in s if ch not in chars_to_delete)\n    return (result, result == result[::-1])"}
+{"task_id":"HumanEval/114","completion":"\n    min_sum = nums[0]\n    cur_min = nums[0]\n    for num in nums[1:]:\n        cur_min = min(num, cur_min + num)\n        min_sum = min(min_sum, cur_min)\n    return min_sum"}
+{"task_id":"HumanEval/116","completion":"\n"}
+{"task_id":"HumanEval/118","completion":"\n"}
+{"task_id":"HumanEval/120","completion":"\n    if k == 0:\n        return []\n    return sorted(arr)[-k:]"}
+{"task_id":"HumanEval/122","completion":"\nreturn sum(x for x in arr[:k] if abs(x) < 100)"}
+{"task_id":"HumanEval/124","completion":"\nif not date or len(date) != 10:\n        return False\n    if date[2] != '-' or date[5] != '-':\n        return False\n    if not (date[:2].isdigit() and date[3:5].isdigit() and date[6:].isdigit()):\n        return False\n    month, day, year = map(int, date.split('-'))\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n    if month in [1, 3, 5, 7, 8, 10, 12] and day > 31:\n        return False\n    if month in [4, 6, 9, 11] and day > 30:\n        return False\n    if month == 2 and day > 29:\n        return False\n    return True"}

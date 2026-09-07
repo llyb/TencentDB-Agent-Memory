@@ -63,7 +63,7 @@ import {
   SqliteSkillStore,
   SkillExtractor,
   resolveSkillConfig,
-  SKILL_REVIEW_PROMPT,
+  getSkillReviewPrompt,
 } from "./skill/index.js";
 // Skill async-extract 现在完全走 conversation-add 侧的 agent 队列 + Worker
 // (SkillTriggerService.archive → agent 队列 → SkillConversationExtractWorker),
@@ -945,10 +945,11 @@ export class TdaiCore {
           this.skillExtractor = new SkillExtractor({
             core: this.skillCore,
             runner: llmRunner,
-            systemPrompt: SKILL_REVIEW_PROMPT,
+            systemPrompt: getSkillReviewPrompt(resolved.extraction.promptVersion),
             maxIterations: resolved.extraction.maxIterations,
             headChars: resolved.extraction.headChars,
             tailChars: resolved.extraction.tailChars,
+            transcriptStrategy: resolved.extraction.transcriptStrategy,
             maxTokens: resolved.extraction.maxTokens,
             prefixSkillsLimit: resolved.extraction.prefixSkillsLimit,
             logger: this.logger,

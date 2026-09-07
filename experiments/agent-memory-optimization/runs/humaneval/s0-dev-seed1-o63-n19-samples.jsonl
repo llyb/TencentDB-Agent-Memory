@@ -1,0 +1,19 @@
+{"task_id":"HumanEval/126","completion":"\n"}
+{"task_id":"HumanEval/128","completion":"\n    if not arr:\n        return None\n    if 0 in arr:\n        return 0\n    return sum(abs(x) for x in arr) * (-1 if sum(x < 0 for x in arr) % 2 else 1)"}
+{"task_id":"HumanEval/130","completion":"\n"}
+{"task_id":"HumanEval/132","completion":"\n"}
+{"task_id":"HumanEval/134","completion":"\n    if not txt:\n        return False\n    if not txt[-1].isalpha():\n        return False\n    return len(txt) == 1 or txt[-2] == ' '"}
+{"task_id":"HumanEval/136","completion":"\n    max_neg = None\n    min_pos = None\n    for x in lst:\n        if x < 0:\n            if max_neg is None or x > max_neg:\n                max_neg = x\n        elif x > 0:\n            if min_pos is None or x < min_pos:\n                min_pos = x\n    return (max_neg, min_pos)"}
+{"task_id":"HumanEval/138","completion":"\n    return n >= 8 and n % 2 == 0"}
+{"task_id":"HumanEval/140","completion":"\n    result = []\n    i = 0\n    while i < len(text):\n        if text[i] == ' ':\n            j = i\n            while j < len(text) and text[j] == ' ':\n                j += 1\n            if j - i > 2:\n                result.append('-')\n            else:\n                result.append('_' * (j - i))\n            i = j\n        else:\n            result.append(text[i])\n            i += 1\n    return ''.join(result)"}
+{"task_id":"HumanEval/142","completion":"\n    total = 0\n    for i, x in enumerate(lst):\n        if i % 3 == 0:\n            total += x ** 2\n        elif i % 4 == 0:\n            total += x ** 3\n        else:\n            total += x\n    return total"}
+{"task_id":"HumanEval/144","completion":"\n    a, b = map(int, x.split('/'))\n    c, d = map(int, n.split('/'))\n    return (a * c) % (b * d) == 0"}
+{"task_id":"HumanEval/146","completion":"\n    count = 0\n    for num in nums:\n        if num > 10:\n            s = str(num)\n            if int(s[0]) % 2 == 1 and int(s[-1]) % 2 == 1:\n                count += 1\n    return count"}
+{"task_id":"HumanEval/148","completion":"\n"}
+{"task_id":"HumanEval/150","completion":"\n    if n < 2:\n        return y\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return y\n    return x"}
+{"task_id":"HumanEval/152","completion":"\n"}
+{"task_id":"HumanEval/154","completion":"\n"}
+{"task_id":"HumanEval/156","completion":"\n    roman_map = [\n        (1000, 'm'), (900, 'cm'), (500, 'd'), (400, 'cd'),\n        (100, 'c'), (90, 'xc'), (50, 'l'), (40, 'xl'),\n        (10, 'x'), (9, 'ix'), (5, 'v'), (4, 'iv'),\n        (1, 'i')\n    ]\n    result = ''\n    for value, symbol in roman_map:\n        while number >= value:\n            result += symbol\n            number -= value\n    return result"}
+{"task_id":"HumanEval/158","completion":"\n    max_unique = -1\n    best_word = \"\"\n    for word in words:\n        unique_count = len(set(word))\n        if unique_count > max_unique or (unique_count == max_unique and word < best_word):\n            max_unique = unique_count\n            best_word = word\n    return best_word"}
+{"task_id":"HumanEval/160","completion":"\n"}
+{"task_id":"HumanEval/162","completion":"\n    if not text:\n        return None\n    import hashlib\n    return hashlib.md5(text.encode()).hexdigest()"}

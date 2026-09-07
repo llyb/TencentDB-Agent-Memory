@@ -1,0 +1,250 @@
+[
+  {
+    "id": "skl-b270d93aafcc",
+    "name": "sort-then-scan-adjacent",
+    "description": "Applies when you need to find whether any pair in a collection satisfies a pairwise condition involving ordering (e.g., closest pair, minimum difference, nearest neighbors). Instead of O(n^2) all-pairs comparison, sort first then only compare adjacent elements.",
+    "content": "Method: 1) Sort the collection (O(n log n)). 2) Iterate over adjacent pairs only. 3) For a 'closer than threshold' check, return True as soon as any adjacent pair satisfies the condition; otherwise False. 4) For a 'minimum difference' query, track the smallest adjacent gap and return it. Edge cases: empty or single-element input has no pairs—return False/inf. Duplicates yield zero difference. Use strict < vs <= consistently with the threshold semantics. Validation: ensure inputs are comparable/orderable; for floats beware NaN (sort may misbehave—filter or guard).",
+    "source_task_id": "HumanEval/0",
+    "sequence_index": 0
+  },
+  {
+    "id": "skl-20fd1606cb9b",
+    "name": "statistical-dispersion-computation",
+    "description": "When computing statistical dispersion measures (MAD, variance, std dev) around a central point (mean, median) from a list of numbers",
+    "content": "1. Handle empty input first: return 0.0 (or appropriate neutral value) to avoid division-by-zero. 2. Compute the centerpoint (e.g., mean = sum(numbers) / len(numbers)). 3. Compute per-element deviation from the centerpoint using a generator expression to avoid intermediate lists. 4. Apply the required norm (abs for MAD, square for variance). 5. Return the average of deviations: sum(deviations) / len(numbers). Edge cases: empty list returns 0.0; single-element list returns 0.0 (no deviation); floating-point inputs may introduce tiny rounding errors. Validation: result is non-negative for absolute/squared deviation measures; result is 0.0 iff all elements equal the centerpoint.",
+    "source_task_id": "HumanEval/4",
+    "sequence_index": 2
+  },
+  {
+    "id": "skl-620f5721b9cc",
+    "name": "max-nesting-depth",
+    "description": "Applies when finding the maximum depth of nested structures like parentheses, brackets, or similar balanced delimiters.",
+    "content": "1. Initialize `current_depth = 0` and `max_depth = 0`.\n2. Iterate through each character of the string.\n3. If the character is an opening delimiter (e.g., '('), increment `current_depth` and update `max_depth = max(max_depth, current_depth)`.\n4. If the character is a closing delimiter (e.g., ')'), decrement `current_depth`.\n5. Edge cases: Empty string (max_depth remains 0), unbalanced parentheses (can optionally check if `current_depth` returns to 0 at the end).\n6. Validation: Ensure `current_depth` does not drop below 0 (which would indicate a closing delimiter without a matching opening one).",
+    "source_task_id": "HumanEval/6",
+    "sequence_index": 3
+  },
+  {
+    "id": "skl-79d252760e88",
+    "name": "shortest-palindrome-prefix",
+    "description": "When you need to find the shortest palindrome that begins with a given string by extending it only at the end",
+    "content": "1. Iterate i from 0 to len(string). 2. For each i, check if string[i:] is a palindrome (string[i:] == string[i:][::-1]). 3. The first i where the suffix is a palindrome marks the longest palindromic suffix. 4. Return string + string[:i][::-1], i.e., append the reverse of the prefix that precedes the palindromic suffix. 5. Edge cases: empty string returns empty string; a fully palindromic input (i=0) returns itself unchanged. 6. Validate: the result must start with the original string and read the same forwards and backwards.",
+    "source_task_id": "HumanEval/10",
+    "sequence_index": 5
+  },
+  {
+    "id": "skl-c9523d04daa1",
+    "name": "polynomial-root-finding-newton",
+    "description": "When finding a real root of a polynomial given its coefficient list in ascending powers, using Newton-Raphson iteration with the analytic derivative.",
+    "content": "1. Compute derivative coefficients: deriv[i] = xs[i+1] * (i+1) for i in range(len(xs)-1). If derivative list is empty (constant polynomial), no root exists unless xs[0]==0.\n2. Pick an initial guess x0. A robust default is 0; if that stalls, retry with x0 = ±1 or a value scaled by coefficient magnitudes.\n3. Newton iteration: x_{n+1} = x_n - poly(xs, x_n) / poly(deriv, x_n). Iterate a fixed cap (e.g., 1000) or until |poly(xs, x_n)| < 1e-10.\n4. Edge cases: if derivative evaluates to 0 at current point, perturb x_n by a small delta (e.g., 1e-7) to avoid division by zero. Polynomials of even degree may lack real roots; an odd-degree guarantee (e.g., even coefficient count with nonzero leading term) ensures at least one real root via the intermediate value theorem.\n5. Validation: confirm |poly(xs, result)| is near zero and round as required.",
+    "source_task_id": "HumanEval/32",
+    "sequence_index": 16
+  },
+  {
+    "id": "skl-79e0e3941651",
+    "name": "sorted-two-pointer-triplet-sum",
+    "description": "Applies when you need to find three elements in a list that sum to a target value (commonly zero), or any triplet-finding problem reducible to a sorted two-pointer scan.",
+    "content": "Method:\n1. Sort the input list in ascending order.\n2. Iterate an outer index i from 0 to n-3 (inclusive).\n3. For each i, initialize two pointers: left = i+1, right = n-1.\n4. While left < right, compute total = l[i] + l[left] + l[right].\n5. If total == target: return True / record the triplet.\n6. If total < target: increment left to increase the sum.\n7. If total > target: decrement right to decrease the sum.\n8. If the loop ends with no match, return False.\n\nEdge cases:\n- Lists with fewer than 3 elements: return False immediately.\n- 'Distinct elements' means distinct indices/positions, not necessarily distinct values; duplicates at different indices are allowed.\n- If distinct values are required, skip duplicate values of l[i] in the outer loop and skip duplicates after moving pointers.\n- Integer overflow is not a concern in Python, but be aware in other languages.\n- Negative numbers are handled naturally by the sorted order.\n\nValidation:\n- Confirm len(l) >= 3 before entering the main loop.\n- Ensure the list is sorted before the two-pointer scan.\n- Confirm left starts at i+1 (not 0) so the same element is not reused.\n- Confirm the while condition is left < right (strict) to avoid using the same index twice.",
+    "source_task_id": "HumanEval/40",
+    "sequence_index": 20
+  },
+  {
+    "id": "skl-5a355a12ede4",
+    "name": "iterative-linear-recurrence",
+    "description": "Applies when computing the n-th term of a sequence defined by a linear recurrence relation without using recursion.",
+    "content": "Method:\n1. Handle base cases directly (e.g., if n < k, return the n-th base case).\n2. Initialize variables representing the last k terms of the sequence.\n3. Loop from k to n, updating the variables by shifting them forward and computing the new term using the recurrence relation (e.g., `a, b, c, d = b, c, d, a + b + c + d`).\n4. Return the last computed term.\nEdge cases: n is smaller than the order of the recurrence (return base case).\nValidation: Ensure n is a non-negative integer.",
+    "source_task_id": "HumanEval/46",
+    "sequence_index": 23
+  },
+  {
+    "id": "skl-2765778e71dd",
+    "name": "bracket-balance-counter",
+    "description": "Applies when validating if a string of single-type brackets (like '<' and '>', or '(' and ')') is correctly matched and nested.",
+    "content": "1. Initialize a `balance` variable to 0.\n2. Iterate through each character in the string.\n3. Increment `balance` for an opening bracket and decrement for a closing bracket.\n4. If `balance` drops below 0 at any step, return False immediately (prevents closing brackets before opening ones).\n5. After the loop, return True if `balance` is exactly 0, otherwise False.\n\nEdge Cases:\n- Empty string: returns True (balance is 0).\n- String with only opening brackets: returns False (balance > 0).\n- String with only closing brackets: returns False (balance < 0).\n\nValidation:\n- Check if `balance` is exactly 0 at the end.\n- Check if `balance` never drops below 0 during iteration.",
+    "source_task_id": "HumanEval/56",
+    "sequence_index": 28
+  },
+  {
+    "id": "skl-a0ebf481aae3",
+    "name": "find-min-with-predicate-and-index-tiebreak",
+    "description": "Applies when you need to scan a sequence to find the minimum value satisfying a condition, breaking ties by earliest index, and return both the value and its position (or a default when nothing qualifies).",
+    "content": "Method:\n1. Initialize a sentinel (e.g., best_value = None, best_index = -1) to track the current winner.\n2. Iterate with enumerate so each element carries its index.\n3. For each element, test the predicate (e.g., val % 2 == 0). Skip elements that fail.\n4. Update the winner when best_value is still None (first qualifying element) OR when the current value is strictly less than best_value. Using strict '<' guarantees that among equal minima the earliest index is retained.\n5. After the loop, if best_value is still None, return the empty/default result; otherwise return [best_value, best_index].\n\nEdge cases:\n- Empty input sequence → return default immediately.\n- No element satisfies the predicate → return default.\n- Multiple elements share the same minimum qualifying value → the first (smallest index) is kept because the comparison is strict.\n- Single-element sequence → that element wins if it qualifies.\n- Zero counts as even (0 % 2 == 0) and is a valid candidate.\n\nValidation:\n- Confirm the predicate is applied to every element exactly once.\n- Confirm the update condition uses strict '<' (not '<=') so index tie-breaking is correct.\n- Confirm the default return value matches the problem's contract (e.g., [] vs None).",
+    "source_task_id": "HumanEval/68",
+    "sequence_index": 34
+  },
+  {
+    "id": "skl-50fa388ea4fa",
+    "name": "two-pointer-interleave-from-ends",
+    "description": "When you need to interleave elements from both ends of a sorted collection, such as alternating min/max ordering, zigzag/wave arrays, or pairing smallest with largest.",
+    "content": "Method:\n1. Sort the input collection ascending.\n2. Initialize two pointers: left = 0, right = len(sorted) - 1, and an empty result list.\n3. While left <= right:\n   - If left == right (single middle element remaining): append only sorted[left].\n   - Else: append sorted[left] (current min) then sorted[right] (current max).\n   - Increment left, decrement right.\n4. Return result.\n\nEdge cases:\n- Empty input -> return empty list.\n- Single element -> return that element.\n- Duplicates -> handled naturally; no special logic needed.\n- Odd-length input -> middle element appended once (guard with left == right check to avoid duplication).\n\nValidation:\n- len(result) == len(input).\n- set(result) == set(input) (all elements preserved).\n- For alternating min/max requirement, verify result[0] is the global min and result[1] is the global max.",
+    "source_task_id": "HumanEval/70",
+    "sequence_index": 35
+  },
+  {
+    "id": "skl-758bff87d4d9",
+    "name": "sliding-window-uniqueness-check",
+    "description": "When checking if all elements in every fixed-size consecutive window of a sequence are distinct.",
+    "content": "1. Validate that the input sequence length is at least the required window size; if not, return False.\n2. Iterate `i` from 0 to `len(sequence) - window_size`.\n3. Extract the window slice `sequence[i : i + window_size]`.\n4. Convert the slice to a set. If `len(set(slice)) < window_size`, return False (indicates duplicate elements in the window).\n5. If the loop completes without returning False, return True.",
+    "source_task_id": "HumanEval/80",
+    "sequence_index": 40
+  },
+  {
+    "id": "skl-ae176fe089c0",
+    "name": "tokenize-transform-preserve-delimiters",
+    "description": "Applies when you need to transform each token of a string (split by a delimiter like space) while keeping the delimiters and their positions exactly intact, e.g. per-word character sorting, per-word reversal, or per-token normalization.",
+    "content": "Method: (1) Iterate char-by-char over the input string. (2) Accumulate non-delimiter chars into a buffer list. (3) When a delimiter is encountered: if buffer is non-empty, apply the transform to the buffered token and append the result to an output list, then clear the buffer; append the delimiter as-is. (4) After the loop, flush any remaining buffer through the transform. (5) Join the output list into the final string. Edge cases: empty string returns empty; leading/trailing/multiple consecutive delimiters are preserved because the delimiter is appended every time it appears regardless of buffer state; single-token input (no delimiter) is handled by the final flush; tokens of length 1 are returned unchanged by sorting. Validation: assert the count and positions of delimiters in output equal those in input; assert the multiset of non-delimiter characters in each corresponding token is unchanged by the transform (e.g. sorted output is a permutation of input token).",
+    "source_task_id": "HumanEval/86",
+    "sequence_index": 43
+  },
+  {
+    "id": "skl-3167d33d8fda",
+    "name": "integer-type-and-sum-check",
+    "description": "Use when verifying that all inputs are strictly integers and that one input equals the sum of the others.",
+    "content": "1. Validate types: Ensure all inputs are exactly of type `int` (using `type(x) == int` to reject floats and booleans). Return False if any fail.\n2. Check sum condition: Return True if any variable equals the sum of the other two (e.g., `x == y + z or y == x + z or z == x + y`).\n3. Edge cases: Using `type() == int` instead of `isinstance()` correctly rejects booleans and floats.",
+    "source_task_id": "HumanEval/92",
+    "sequence_index": 46
+  },
+  {
+    "id": "skl-e21e5c19e19b",
+    "name": "max-prime-digit-sum",
+    "description": "Applies when you need to find the largest prime number in a collection and compute the sum of its digits.",
+    "content": "1. Initialize `max_prime` to 0.\n2. Iterate through the list of numbers.\n3. For each number, check if it is prime (greater than 1, no divisors other than 1 and itself up to its square root).\n4. If it is prime and greater than `max_prime`, update `max_prime`.\n5. Edge Cases: If no prime is found, return 0. Handle numbers less than 2 as non-prime.\n6. Validation: Ensure the input is a list of integers.\n7. Calculate the sum of the digits of `max_prime` (e.g., `sum(int(d) for d in str(max_prime))`).\n8. Return the digit sum.",
+    "source_task_id": "HumanEval/94",
+    "sequence_index": 47
+  },
+  {
+    "id": "skl-965d2d49e916",
+    "name": "trial-division-primes-up-to-limit",
+    "description": "When you need to generate or filter prime numbers below a given integer bound using a simple, dependency-free method.",
+    "content": "Method: Iterate candidate integers from 2 up to (but not including) the limit n. For each candidate c, test divisibility by all integers d from 2 through floor(sqrt(c)). If no divisor divides c, c is prime; collect it. Optimization: only check divisors up to sqrt(c) because a composite number must have a factor <= its square root. Edge cases: n <= 2 returns empty list (no primes below 2); n = 0 or 1 returns empty; the limit itself is excluded. Validation: verify 2 is included when n > 2; verify no composite numbers appear; verify result is strictly increasing and all elements < n; confirm count matches known prime-counting values for small n.",
+    "source_task_id": "HumanEval/96",
+    "sequence_index": 48
+  },
+  {
+    "id": "skl-18db318b0f07",
+    "name": "arithmetic-sequence-generation",
+    "description": "When you need to generate a list of n terms of an arithmetic sequence given a starting value and common difference",
+    "content": "1. Identify the starting value (first term) and the common difference between consecutive terms. 2. Use a list comprehension: [start + diff * i for i in range(n)] to generate n terms. 3. Edge cases: when n is 0, the result is an empty list; when diff is 0, all terms are equal to start. 4. Validate that n is a non-negative integer and that start and diff are numeric types.",
+    "source_task_id": "HumanEval/100",
+    "sequence_index": 50
+  },
+  {
+    "id": "skl-bffd14876d4c",
+    "name": "arithmetic-series-sum-formula",
+    "description": "When you need to compute the sum of integers from 1 to n, use the closed-form formula instead of looping.",
+    "content": "1. Recognize when a sum of consecutive integers from 1 to n is needed.\n2. Apply the formula: sum = n * (n + 1) // 2 using integer division to avoid float results.\n3. Edge cases: n=0 returns 0, n=1 returns 1, negative n should be guarded or return 0.\n4. Validate: for small n (e.g., n=5 → 15), confirm the formula matches the iterative approach sum(range(1, n+1)).",
+    "source_task_id": "HumanEval/106",
+    "sequence_index": 53
+  },
+  {
+    "id": "skl-08dd359f0648",
+    "name": "exchange-feasibility-counting",
+    "description": "Applies when determining whether swapping elements between two collections can make one collection satisfy a target property (e.g., all even). Instead of simulating swaps, count the deficit in the target and the surplus in the source, then compare.",
+    "content": "1. Count elements in the target list that fail the desired condition (these need replacement).\n2. Count elements in the source list that satisfy the desired condition (available replacements).\n3. If available count >= needed count, the exchange is feasible; otherwise not.\n4. Edge cases: target already satisfies condition (needed=0 → always feasible); source has zero qualifying elements; lists of unequal length; empty lists if permitted.\n5. Validation: confirm inputs are lists of comparable element types; use modulo or predicate consistently for the condition check.",
+    "source_task_id": "HumanEval/110",
+    "sequence_index": 55
+  },
+  {
+    "id": "skl-620fb57c41ef",
+    "name": "string-filter-and-palindrome-check",
+    "description": "Applies when you need to remove characters from a string based on an exclusion set and then verify whether the resulting string is a palindrome.",
+    "content": "1. Convert the exclusion characters into a set for O(1) membership testing (especially when c is large).\n2. Build the filtered string using a generator expression inside ''.join(): result = ''.join(ch for ch in s if ch not in excluded_set).\n3. Check palindrome by comparing the string to its reverse slice: is_palindrome = result == result[::-1].\n4. Return both the filtered string and the boolean as a tuple.\nEdge cases: empty s yields ('', True) since an empty string reads the same forwards and backwards; empty c means no characters are removed; duplicate characters in c are handled naturally by the set; case-sensitive by default—normalize with .lower() if case-insensitive comparison is needed.\nValidation: confirm the filtered string contains no characters from c; confirm palindrome flag matches a manual two-pointer check for short results.",
+    "source_task_id": "HumanEval/112",
+    "sequence_index": 56
+  },
+  {
+    "id": "skl-eaf8b4dac014",
+    "name": "rightmost-sandwiched-element-search",
+    "description": "When finding the rightmost element in a string that is flanked on both sides by elements of a different category (e.g., a vowel between two consonants), with boundary positions excluded.",
+    "content": "1. Define category sets (e.g., vowels='aeiouAEIOU'; consonants=all other letters).\n2. Iterate from index len(word)-2 down to index 1 (boundaries excluded by definition).\n3. At each index i, check: word[i] in target_category AND word[i-1] in other_category AND word[i+1] in other_category.\n4. Return word[i] on first match (rightmost).\n5. If no match, return empty string.\n\nEdge cases: length < 3 returns empty (no valid interior position); only positions 1..len-2 are valid; preserve case of found element; a vowel at index 0 or len-1 never counts even if between consonants conceptually.\n\nValidation: confirm returned element's left and right neighbors are both consonants; confirm no element at a higher index also satisfies the condition.",
+    "source_task_id": "HumanEval/118",
+    "sequence_index": 59
+  },
+  {
+    "id": "skl-e346455b23ea",
+    "name": "top-k-selection-via-sorting",
+    "description": "When you need to retrieve the top k (largest) or bottom k (smallest) elements from a collection, optionally in sorted order.",
+    "content": "1. Handle the edge case: if k == 0, return an empty list immediately.\n2. Sort the collection in ascending order.\n3. For the largest k elements, slice the last k elements with sorted_arr[-k:].\n4. For the smallest k elements, slice the first k elements with sorted_arr[:k].\n5. Edge cases: k == len(arr) returns the fully sorted list; k == 0 returns [].\n6. Validation: ensure 0 <= k <= len(arr); if k > len(arr), either clamp or raise.\n7. Note: for large arrays where only k is needed (not sorted order), consider heapq.nlargest / heapq.nsmallest for O(n log k) performance instead of O(n log n) full sort.",
+    "source_task_id": "HumanEval/120",
+    "sequence_index": 60
+  },
+  {
+    "id": "skl-a09e417839eb",
+    "name": "validate-delimited-string-fields",
+    "description": "Applies when validating a string that must match a fixed delimiter-separated format with per-field length, numeric, and range/conditional constraints (e.g., dates, IDs, codes).",
+    "content": "Method:\n1. Reject empty input immediately.\n2. Split on the expected delimiter; require exactly the expected number of parts.\n3. Verify each part's expected length (e.g., 2/2/4 for mm-dd-yyyy) before any conversion.\n4. Confirm each part is numeric with isdigit() to avoid exceptions and reject signs/decimals.\n5. Convert parts to integers only after format checks pass.\n6. Enforce absolute range constraints per component (e.g., month 1-12).\n7. Enforce conditional/business rules that depend on another field (e.g., max day varies by month; February allows up to 29).\n8. Return False on the first failed check; return True only after all checks pass.\n\nEdge cases:\n- Wrong delimiter (e.g., '/' instead of '-').\n- Too few/many parts.\n- Parts with wrong length (e.g., '0' instead of '00').\n- Non-numeric content, signs, whitespace, or decimals.\n- Out-of-range values and boundary values (1, 28/29/30/31, 12).\n- Leading zeros: accepted by isdigit() and handled correctly by int().\n\nValidation:\n- Test one representative valid case.\n- Test each failure mode independently (empty, bad delimiter, wrong part count, wrong lengths, non-numeric, out-of-range, conditional rule violations).\n- Test boundary values for each constrained field.",
+    "source_task_id": "HumanEval/124",
+    "sequence_index": 62
+  },
+  {
+    "id": "skl-6a969ceed2a8",
+    "name": "consecutive-run-scanning",
+    "description": "Applies when you need to process runs of consecutive identical characters in a string and apply different transformations based on run length or run properties.",
+    "content": "Method: 1) Use two pointers i (scan cursor) and j (run-end finder). 2) Outer loop advances i over the string. 3) When the current char matches a target char, start an inner loop: advance j while text[j] equals the target char. 4) Compute run length = j - i. 5) Apply a length-dependent transformation (e.g., replace short runs with one symbol, long runs with another). 6) Set i = j to skip the consumed run. 7) Otherwise append the non-target char and increment i by one. 8) Collect into a list and join at the end for O(n) performance. Edge cases: empty string (loop never executes), run at the very end of the string (inner while must check j < n), single-character runs, and runs of exactly the threshold length (decide inclusive vs exclusive boundary carefully). Validation: verify threshold comparisons use the intended strictness (e.g., > 2 means runs of 3+ get the alternate treatment), and confirm the inner pointer does not overshoot the string bounds.",
+    "source_task_id": "HumanEval/140",
+    "sequence_index": 70
+  },
+  {
+    "id": "skl-0057cfa6761d",
+    "name": "index-conditional-aggregation",
+    "description": "When you need to apply different transformations to list elements based on their index properties (e.g., divisibility by certain numbers) and aggregate the results into a single value like a sum.",
+    "content": "1. Use enumerate() to iterate with both index i and value val.\n2. Apply conditional logic based on index properties (e.g., i % n == 0).\n3. Order conditions carefully: place the more specific or higher-priority condition first, then use elif for mutually exclusive branches, else for the default.\n4. Accumulate transformed values into a running total initialized to 0.\n5. Return the total.\n\nEdge cases:\n- Empty list: the loop body never runs, so total stays 0 (correct identity for sum).\n- Index 0 is a multiple of every integer, so it always matches the first divisibility check—design condition order accordingly.\n- Negative values: exponentiation works normally; no special handling needed.\n- Overlapping conditions (e.g., multiples of 3 and 4): use elif so the first matching branch wins, preventing double application.\n\nValidation:\n- Confirm conditions are ordered so the intended branch fires for each index.\n- Test with empty list, single element, and indices that satisfy multiple divisibility rules to verify branch priority.",
+    "source_task_id": "HumanEval/142",
+    "sequence_index": 71
+  },
+  {
+    "id": "skl-74f1c69d51ac",
+    "name": "fraction-product-whole-check",
+    "description": "When checking if the product of two fractions (given as strings like 'a/b') evaluates to a whole number",
+    "content": "1. Parse each fraction string by splitting on '/' to extract numerator and denominator. 2. Convert all parts to integers. 3. Compute cross-product: new_numerator = num1 * num2, new_denominator = den1 * den2. 4. Check divisibility: return (new_numerator % new_denominator == 0). Edge cases: zero numerator yields 0 which is whole (True); use integer arithmetic throughout to avoid float precision errors with large numbers. Validation: confirm denominators are non-zero and input matches 'int/int' format.",
+    "source_task_id": "HumanEval/144",
+    "sequence_index": 72
+  },
+  {
+    "id": "skl-519a0991bff9",
+    "name": "count-with-digit-checks",
+    "description": "When you need to count elements in a collection that satisfy a numeric threshold and also have specific digit-level properties (e.g., first/last digit parity)",
+    "content": "1. Iterate through the collection and apply the threshold filter first (e.g., num > 10) to narrow candidates before any string conversion.\n2. Convert each qualifying number to a string with str(num) to access individual digits by index.\n3. Check the required digit properties (e.g., int(s[0]) % 2 == 1 and int(s[-1]) % 2 == 1 for odd first and last digits).\n4. Increment a counter only when all conditions are satisfied.\n5. Return the counter.\n\nEdge cases:\n- Negative numbers: the threshold filter (e.g., > 10) excludes them, avoiding the leading '-' sign issue; if negatives must be handled, strip the sign before digit checks.\n- Single-digit numbers: ensure the threshold prevents them or handle s[0] == s[-1] correctly.\n- Zero: excluded by a positive threshold; handle separately if needed.\n\nValidation:\n- Confirm the threshold is applied before str() conversion to avoid ValueError on '-' for negatives.\n- Verify the returned count matches expected outputs for provided test cases.",
+    "source_task_id": "HumanEval/146",
+    "sequence_index": 73
+  },
+  {
+    "id": "skl-3bbdde1af513",
+    "name": "find-items-between-in-ordered-list",
+    "description": "When you need to return all items strictly between two given items in a predefined ordered sequence, handling invalid inputs and either ordering of the two endpoints.",
+    "content": "1. Define an ordered list (e.g., by proximity/index) containing all valid items.\n2. Validate both inputs: if either is not in the list, return an empty result.\n3. Get the indices of both input items.\n4. Compute lo = min(idx1, idx2) and hi = max(idx1, idx2).\n5. Return items at indices lo+1 through hi-1 (exclusive of both endpoints), preserving list order.\n6. If lo and hi are equal or adjacent, the result is naturally empty.\n\nEdge cases:\n- Invalid/unknown item name → empty result.\n- Same item given twice → empty result.\n- Adjacent items in the sequence → empty result.\n- Inputs given in reverse order → still returns items between them in correct sequence order.\n\nValidation:\n- Confirm both inputs exist in the ordered list before indexing.\n- Ensure output is sorted by position in the original list (slicing preserves this).",
+    "source_task_id": "HumanEval/148",
+    "sequence_index": 74
+  },
+  {
+    "id": "skl-0655d883f378",
+    "name": "element-wise-absolute-difference",
+    "description": "When you need to compare two equal-length arrays element by element and return the absolute difference (or distance) for each pair, such as scoring guesses against actual values.",
+    "content": "1. Pair corresponding elements from both arrays using zip(a, b). 2. For each pair, compute abs(b_i - a_i) to get a non-negative distance. 3. Collect results into a list (or array) of the same length. Edge cases: empty arrays return an empty list; negative values are handled naturally by abs; equal values yield 0. Validate that both inputs have equal length before zipping if the contract requires it.",
+    "source_task_id": "HumanEval/152",
+    "sequence_index": 76
+  },
+  {
+    "id": "skl-2a23d58baf82",
+    "name": "rotation-substring-check",
+    "description": "Applies when you need to determine whether any rotation of a string b is a substring of another string a.",
+    "content": "Method:\n1. If b is empty, return True immediately (the empty string is a substring of any string).\n2. For i in range(len(b)), form the i-th rotation as b[i:] + b[:i]. This covers all len(b) cyclic rotations including the original string (i=0).\n3. Use Python's `in` operator to test whether each rotation is a substring of a.\n4. Return True as soon as a match is found; return False after exhausting all rotations.\n\nEdge cases:\n- Empty b: return True.\n- b longer than a: no rotation can fit; the loop naturally returns False.\n- Duplicate rotations (e.g., b='abab'): harmless, just redundant checks.\n- Overlapping matches: handled correctly by `in`.\n\nValidation:\n- Confirm both inputs are strings.\n- Sanity check: the set of generated rotations should have size equal to the number of distinct cyclic shifts (<= len(b)).\n- Test with b equal to a full rotation of a substring of a to ensure True; test with unrelated b to ensure False.",
+    "source_task_id": "HumanEval/154",
+    "sequence_index": 77
+  },
+  {
+    "id": "skl-b7a79f3c0f79",
+    "name": "min-max-composite-key",
+    "description": "When selecting an item from a list based on multiple criteria with mixed sort directions (e.g., maximize one property, minimize another), use min or max with a tuple key.",
+    "content": "Method: Use min() or max() with a key function that returns a tuple. For descending numeric criteria, negate the value (e.g., -len(set(word))). For ascending criteria (e.g., lexicographical order), use the value directly. Python compares tuples element-wise, so the first element dominates, then the second, etc. Edge cases: If the list is empty, handle separately (e.g., return a default). If multiple items have identical keys, min/max returns the first encountered in iteration order. Validation: Ensure the key function works for all items; for strings, set(word) gives unique characters; adapt for other types.",
+    "source_task_id": "HumanEval/158",
+    "sequence_index": 79
+  },
+  {
+    "id": "skl-f10bb9cb5925",
+    "name": "build-and-eval-expression-from-lists",
+    "description": "When you need to construct and evaluate a mathematical or algebraic expression from a list of operators and a list of operands, where standard operator precedence should be respected.",
+    "content": "Method:\n1. Start the expression string with the first operand (str(operand[0])).\n2. Use zip(operator, operand[1:]) to pair each operator with the next operand.\n3. Concatenate each pair onto the expression string in the form ' op num'.\n4. Return eval(expression) so Python's native operator precedence (e.g. ** before * before +/-) is applied automatically.\n\nEdge Cases:\n- Floor division (//) by zero raises ZeroDivisionError; guard or document if zero divisors are possible.\n- Exponentiation (**) with large exponents can produce huge integers; consider bounding inputs if performance matters.\n- Negative or non-integer operands are not expected per spec; validate if inputs are untrusted.\n- Never use eval() on untrusted user-supplied strings; only safe here because operators come from a fixed allowed set and operands are integers.\n\nValidation:\n- Assert len(operator) == len(operand) - 1.\n- Assert len(operator) >= 1 and len(operand) >= 2.\n- Assert all operands are non-negative integers.\n- Assert all operators are within the allowed set {'+','-','*','//','**'}.",
+    "source_task_id": "HumanEval/160",
+    "sequence_index": 80
+  }
+]

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "skl-8d7e9e36a8d5",
+    "name": "check-close-elements",
+    "description": "Applies when checking if any two elements in a list of numbers are within a specific distance/threshold of each other.",
+    "content": "1. Edge cases: If the input list has fewer than 2 elements, return False immediately as no pair can exist.\n2. Sort the list of numbers in ascending order.\n3. Iterate through the sorted list from the first element to the second-to-last element.\n4. Validation: For each element, calculate the difference between it and the next element. If the difference is strictly less than the threshold, return True.\n5. If the loop completes without returning True, return False.",
+    "source_task_id": "HumanEval/0",
+    "sequence_index": 0
+  },
+  {
+    "id": "skl-36ff8ec194f4",
+    "name": "sum-and-product-aggregate",
+    "description": "Applies when calculating the sum and product of a list of numbers, including handling empty lists.",
+    "content": "1. Initialize `total_sum` to 0 and `total_product` to 1.\n2. Iterate through each number in the list, adding to `total_sum` and multiplying into `total_product`.\n3. Return both values as a tuple.\nEdge cases: An empty list returns (0, 1) due to the initial values.",
+    "source_task_id": "HumanEval/8",
+    "sequence_index": 4
+  },
+  {
+    "id": "skl-b56d569073aa",
+    "name": "shortest-palindrome-extension",
+    "description": "when you need to find the shortest palindrome that begins with a given string (or similarly, extend a string minimally to make it a palindrome)",
+    "content": "Method: (1) Find the longest suffix of the input string that is itself a palindrome — iterate i from 0 to n and pick the smallest i such that s[i:] is a palindrome (equivalently the longest palindromic suffix). (2) Let prefix = s[:i] be the part before that palindromic suffix. (3) Return s + prefix[::-1] (append the reverse of the prefix). Edge cases: empty input returns empty string; if the entire string is already a palindrome, i=0 so the appended reverse is empty and the string is returned unchanged. Validation: the result must start with the original string, the result must read the same forwards and backwards, and no shorter palindrome starting with the input should exist (guaranteed because reusing the longest palindromic suffix minimizes the appended characters).",
+    "source_task_id": "HumanEval/10",
+    "sequence_index": 5
+  },
+  {
+    "id": "skl-64bdf56b131b",
+    "name": "count-overlapping-substring-occurrences",
+    "description": "When you need to count how many times a substring appears in a string, including overlapping occurrences (e.g., 'aaaa' contains 'aa' three times).",
+    "content": "Method: (1) Guard against empty substring by returning 0 immediately to avoid an infinite loop. (2) Initialize count=0 and start=0. (3) Repeatedly call string.find(substring, start). (4) If it returns -1, stop. (5) Otherwise increment count and set start = pos + 1 — NOT pos + len(substring) — so overlapping matches are detected. (6) Return count. Edge cases: empty substring returns 0; substring longer than the string returns 0; single-character substrings naturally count every position. Validation: assert count_overlapping('aaaa','aa')==3, count_overlapping('aaa','a')==3, count_overlapping('','a')==0, count_overlapping('abc','')==0.",
+    "source_task_id": "HumanEval/18",
+    "sequence_index": 9
+  },
+  {
+    "id": "skl-930e632cf116",
+    "name": "closest-pair-by-sorting",
+    "description": "Applies when you need to find the two elements in a list that are closest in value (minimum absolute difference). Works for numeric lists of length at least two.",
+    "content": "1. Sort the list in ascending order so the closest pair must be adjacent. 2. Form consecutive pairs using zip(sorted_list, sorted_list[1:]). 3. Select the pair with the minimum difference using min(pairs, key=lambda p: p[1] - p[0]). 4. Return the pair as (smaller, larger). Edge cases: duplicate values yield a difference of zero and are correctly selected; floating-point values are handled directly by subtraction. Validation: ensure the input list has at least two elements before proceeding.",
+    "source_task_id": "HumanEval/20",
+    "sequence_index": 10
+  },
+  {
+    "id": "skl-c17282497ea6",
+    "name": "group-wise-cyclic-rotation",
+    "description": "Applies when encoding/decoding or transforming strings by splitting into fixed-size groups and rotating elements within each group, especially when you need to reverse a rotation operation.",
+    "content": "Method:\n1. Split the string into consecutive groups of size N using slicing: [s[(N*i):min((N*i+N), len(s))] for i in range((len(s)+N-1)//N)].\n2. For encoding, apply a left rotation to each full group (move first element to end): group[1:] + group[0].\n3. For decoding, apply the inverse right rotation (move last element to front): group[-1] + group[:-1].\n4. Only rotate groups whose length equals N; leave partial groups unchanged.\n5. Join all groups back into a single string.\n\nEdge cases:\n- Empty string produces empty output.\n- String length not a multiple of N: the final partial group is passed through unrotated.\n- N=1 or N=0: rotation is a no-op (guard against N<=0).\n\nValidation:\n- decode_cyclic(encode_cyclic(s)) == s for all strings s.\n- Groups with len < N remain identical after both encode and decode.\n- Total output length equals input length.",
+    "source_task_id": "HumanEval/38",
+    "sequence_index": 19
+  },
+  {
+    "id": "skl-5a355a12ede4",
+    "name": "iterative-linear-recurrence",
+    "description": "Applies when computing the n-th element of a sequence defined by a linear recurrence relation, especially when recursion is prohibited or inefficient.",
+    "content": "1. Identify the recurrence relation (e.g., f(n) = f(n-1) + ... + f(n-k)) and the base cases.\n2. Handle n values that fall within the base cases directly by returning the corresponding base value.\n3. Initialize a set of variables representing the last k computed values.\n4. Loop from the max base case index + 1 up to n. In each step, calculate the next value using the recurrence and update the variables using simultaneous assignment to shift the window (e.g., a, b, c, d = b, c, d, a + b + c + d).\n5. Return the most recently computed value.\n6. Edge cases: negative n (if applicable, though usually sequences start at 0), n within base cases.",
+    "source_task_id": "HumanEval/46",
+    "sequence_index": 23
+  },
+  {
+    "id": "skl-2765778e71dd",
+    "name": "bracket-balance-counter",
+    "description": "when validating whether a string of bracket/parenthesis characters is properly matched and nested (single-type brackets)",
+    "content": "Method:\n1. Initialize a depth/balance counter to 0.\n2. Iterate through each character in the string.\n3. Increment the counter for an opening bracket; decrement for a closing bracket.\n4. If the counter ever goes negative, return False immediately (a closing bracket appeared with no unmatched opening bracket before it).\n5. After the loop, return True only if the counter equals 0 (all opened brackets were closed); otherwise return False.\n\nEdge cases:\n- Empty string: counter stays 0, returns True (trivially balanced).\n- String starting with a closing bracket: counter goes negative on first char, returns False.\n- Unmatched opening brackets left over: counter > 0 at end, returns False.\n- Unmatched closing brackets: caught either by negative check mid-loop or non-zero final counter.\n\nValidation:\n- The counter must never be negative at any point during iteration (ensures proper nesting, not just equal counts).\n- The final counter must be exactly 0 (ensures no leftover unclosed brackets).",
+    "source_task_id": "HumanEval/56",
+    "sequence_index": 28
+  },
+  {
+    "id": "skl-4b026eceef96",
+    "name": "conditional-character-counting",
+    "description": "Applies when counting characters in a string where some characters have position-dependent or conditional rules (e.g., 'y' is a vowel only at the end of a word).",
+    "content": "Method:\n1. Normalize the string (e.g., .lower()) to handle case-insensitivity uniformly.\n2. Count characters matching the base/unconditional set using sum(1 for c in s if c in base_set).\n3. Separately evaluate each conditional rule (e.g., position-dependent like endswith('y')) and add to the count.\n4. Return the total.\n\nEdge cases:\n- Empty string: base count is 0; conditional checks (endswith) return False, so result is 0.\n- All-uppercase or mixed-case input: normalization handles it.\n- Character appears both unconditionally and conditionally: ensure you don't double-count (e.g., 'y' is NOT in the base 'aeiou' set, only counted via the end rule).\n- Multiple conditional characters: evaluate each rule independently.\n\nValidation:\n- Test with empty string (expect 0).\n- Test case-insensitivity (e.g., 'ACEDY' should match 'acedy').\n- Test the conditional rule triggers only at the correct position (e.g., 'y' in middle does not count, 'y' at end does).\n- Test a word ending in 'y' that also contains standard vowels to confirm both contributions add up.",
+    "source_task_id": "HumanEval/64",
+    "sequence_index": 32
+  },
+  {
+    "id": "skl-241e9ece2a91",
+    "name": "min-max-alternating-sort",
+    "description": "When you need to reorder a list so that elements alternate between the smallest and largest remaining values (e.g., min, max, second min, second max, ...).",
+    "content": "Method:\n1. If input list is empty, return [].\n2. Sort the list in ascending order.\n3. Initialize left=0, right=len(sorted)-1, result=[].\n4. While left <= right:\n   - If left == right: append sorted[left] and break.\n   - Else: append sorted[left] then sorted[right].\n   - Increment left, decrement right.\n5. Return result.\n\nEdge cases:\n- Empty list: returns [].\n- Single element: returns that element.\n- Duplicates: handled correctly because sorting groups them.\n- Odd length: middle element appended once when left==right.\n\nValidation:\n- Result length equals input length.\n- Result is a permutation of input (multiset equality).\n- For even indices i, result[i] should be the (i//2)-th smallest element; for odd indices i, result[i] should be the (i//2)-th largest element (0-indexed from ends).",
+    "source_task_id": "HumanEval/70",
+    "sequence_index": 35
+  },
+  {
+    "id": "skl-5d74471781b6",
+    "name": "palindrome-constraint-validation",
+    "description": "When you need to verify that a sequence is palindromic and also satisfies a quantitative constraint such as a sum, weight, or capacity limit.",
+    "content": "Method: (1) Check the palindrome property by comparing the sequence to its reverse using slicing: q == q[::-1]. (2) Check the quantitative constraint: sum(q) <= threshold. (3) Combine both with a logical AND so short-circuit evaluation skips the sum computation when the palindrome check already fails. Edge cases: an empty list is a valid palindrome with sum 0; a single-element list is always palindromic. Validation: ensure the input is a list/sequence and the threshold is a comparable numeric value before applying the checks.",
+    "source_task_id": "HumanEval/72",
+    "sequence_index": 36
+  },
+  {
+    "id": "skl-b4b23f626910",
+    "name": "aggregate-comparison-with-tiebreaker",
+    "description": "When you need to compare two collections by an aggregate metric (e.g., total character count, sum of values) and return one collection based on which has the smaller/larger metric, with a deterministic tiebreaker.",
+    "content": "1. Compute the aggregate metric for each collection using a generator expression (e.g., sum(len(s) for s in lst)).\n2. Compare the two totals with explicit if/elif branches.\n3. Return the collection with the smaller (or larger) metric.\n4. On a tie, return the first collection (or whichever side the spec designates) to ensure deterministic output.\nEdge cases: empty collections yield an aggregate of 0; handle ties explicitly rather than relying on <= to avoid ambiguity. Validation: ensure inputs are iterables of the expected element type before aggregating.",
+    "source_task_id": "HumanEval/74",
+    "sequence_index": 37
+  },
+  {
+    "id": "skl-f6bc169438a7",
+    "name": "sliding-window-distinct-check",
+    "description": "When you need to verify that every contiguous subsequence of a fixed length in a sequence contains all distinct elements.",
+    "content": "1. If the sequence length is less than the window size, return False (or handle as per requirement).\n2. Iterate i from 0 to len(sequence) - window_size.\n3. For each i, take the slice sequence[i:i+window_size].\n4. If the number of unique elements in the slice (e.g., len(set(slice))) is less than window_size, return False.\n5. If all slices pass, return True.\nEdge cases: window size larger than sequence length, empty sequence, window size 1 (always distinct unless empty). Validation: ensure window size is a positive integer and sequence is iterable.",
+    "source_task_id": "HumanEval/80",
+    "sequence_index": 40
+  },
+  {
+    "id": "skl-970b7390ab1c",
+    "name": "digit-sum-to-binary",
+    "description": "When you need to compute the sum of digits of an integer and express the result as a binary string without prefix",
+    "content": "1. Convert the integer to a string to iterate over each digit character.\n2. Sum the integer values of each digit using a generator expression: sum(int(d) for d in str(N)).\n3. Convert the digit sum to binary using Python's built-in bin() function.\n4. Strip the '0b' prefix by slicing from index 2: bin(digit_sum)[2:].\nEdge cases: N=0 yields digit sum 0 and binary '0'; single-digit N yields digit sum equal to N itself; large N may produce a multi-bit binary string.\nValidation: confirm the output string contains only '0' and '1' characters; verify the digit sum matches a manual calculation.",
+    "source_task_id": "HumanEval/84",
+    "sequence_index": 42
+  },
+  {
+    "id": "skl-4c1c3f14c858",
+    "name": "sort-characters-in-words",
+    "description": "Applies when sorting the characters of each word in a string by ASCII value while preserving word order and spaces.",
+    "content": "1. Split the string using `split(' ')` to preserve exact spacing (including multiple spaces).\n2. Iterate through each part. For each part, sort its characters using `sorted()`.\n3. Join the sorted characters back into a string using `''.join()`.\n4. Join the processed parts back together with spaces using `' '.join()`.\nEdge cases: Empty strings or multiple spaces are handled correctly by `split(' ')` and `' '.join()`.",
+    "source_task_id": "HumanEval/86",
+    "sequence_index": 43
+  },
+  {
+    "id": "skl-1110ed38923a",
+    "name": "strict-type-sum-check",
+    "description": "When you need to verify all inputs are strictly integers and check if one equals the sum of the other two",
+    "content": "1. Validate every input is strictly an integer using `type(x) == int` for each argument (not isinstance, which would accept bools).\n2. If all pass the type check, test the sum relationship: `a == b + c or b == a + c or c == a + b`.\n3. Return False immediately if any input fails the type check.\nEdge cases: Floats like 3.0 return False; booleans return False because type(True) is bool, not int; negative integers are valid and the sum relationship still holds (e.g., 3, -2, 1 → True).\nValidation: Never use int(x) to coerce inputs, as that would accept floats; prefer type() == int over isinstance() when booleans should be rejected.",
+    "source_task_id": "HumanEval/92",
+    "sequence_index": 46
+  },
+  {
+    "id": "skl-d2c3ade3aeb2",
+    "name": "trial-division-primes",
+    "description": "Applies when you need to generate or filter prime numbers up to a given limit n (e.g., primes less than n) without external libraries.",
+    "content": "Method:\n1. Iterate candidate i from 2 up to (but not including) n.\n2. For each i, test divisors j from 2 through int(i**0.5) inclusive.\n3. If any j divides i evenly (i % j == 0), break — i is composite.\n4. Use Python's for-else: the else clause runs only when the loop completed without break, meaning i is prime; append i to the result list.\n5. Return the collected primes.\n\nEdge cases:\n- n <= 2 returns an empty list (no primes below 2).\n- n is 0 or 1 returns [].\n- The upper bound is exclusive: primes must be strictly less than n.\n- i == 2: the divisor range range(2, int(sqrt(2))+1) = range(2,2) is empty, so the else runs and 2 is correctly prime.\n\nValidation:\n- Confirm 2 is included when n > 2.\n- Confirm no composite (e.g., 4, 6, 9) appears in output.\n- Confirm output is strictly ascending and all elements < n.\n- For n up to ~10^5 this O(n*sqrt(n)) approach is acceptable; for larger limits prefer a sieve.",
+    "source_task_id": "HumanEval/96",
+    "sequence_index": 48
+  },
+  {
+    "id": "skl-d120c40d9545",
+    "name": "running-accumulator-conditional-selection",
+    "description": "Applies when building a sequence where each element is chosen between two or more running accumulators (e.g., factorial product, cumulative sum) based on a per-index condition such as parity.",
+    "content": "1. Initialize each running accumulator to its identity value (product accumulator = 1, sum accumulator = 0). 2. Iterate i over the desired 1-based range. 3. Update every accumulator incrementally at each step (multiply product by i, add i to sum) so no recomputation is needed. 4. Evaluate the per-index condition (e.g., i % 2 == 0) and append the corresponding accumulator's current value to the result list. 5. Return the result list. Edge cases: n == 0 returns an empty list; n == 1 still runs one iteration with accumulators at their post-step values. Validation: assert len(result) == n and each element equals the closed-form value for its index (factorial for even, triangular number for odd).",
+    "source_task_id": "HumanEval/106",
+    "sequence_index": 53
+  },
+  {
+    "id": "skl-ffd5325adf94",
+    "name": "swap-to-target-feasibility",
+    "description": "Applies when determining if swapping elements between two collections can transform one collection to meet a specific condition (e.g., all elements even).",
+    "content": "1. Identify the target condition for the first collection (e.g., all elements must be even).\n2. Count the number of elements in the first collection that violate this condition (these must be swapped out).\n3. Count the number of elements in the second collection that satisfy the condition (these can be swapped in).\n4. Return true/YES if the count of satisfying elements in the second collection is greater than or equal to the count of violating elements in the first collection; otherwise, false/NO.\nEdge Cases: Handle empty lists (deficiency is 0, so it is trivially possible).\nValidation: Ensure inputs are iterables and elements can be evaluated against the condition.",
+    "source_task_id": "HumanEval/110",
+    "sequence_index": 55
+  },
+  {
+    "id": "skl-093b158216a2",
+    "name": "filter-and-palindrome-check",
+    "description": "Applies when you need to remove specific characters from a string and then verify if the result is a palindrome",
+    "content": "1. Build the filtered string using a generator expression inside ''.join(): ''.join(ch for ch in s if ch not in c). Using 'not in' with a string (or set for efficiency) handles multi-character exclusion sets naturally.\n2. Check palindrome by comparing the string to its reverse slice: result == result[::-1]. This is O(n) and concise.\n3. Return both pieces of information as a tuple (filtered_string, is_palindrome).\nEdge cases: empty result string is a palindrome (True). If c is empty, no characters are removed. Case-sensitive by default; normalize with .lower() if case-insensitive comparison is needed. For large exclusion sets, convert c to a set first for O(1) membership tests.\nValidation: confirm the filtered string contains no characters present in c; confirm palindrome check handles single-character and empty strings correctly.",
+    "source_task_id": "HumanEval/112",
+    "sequence_index": 56
+  },
+  {
+    "id": "skl-10405921cc38",
+    "name": "sorted-with-duplicate-limit",
+    "description": "Applies when validating whether a list is sorted in ascending order while also enforcing a maximum occurrence count (e.g., at most 2) for any duplicate value.",
+    "content": "Method:\n1. Handle trivial edge cases: empty list or single-element list → return True.\n2. Iterate through the list from the second element onward, tracking the previous value and a running duplicate count (initialized to 1 for the first element).\n3. For each element: if current < previous → return False (not ascending).\n4. If current == previous → increment duplicate count; if count exceeds the allowed maximum → return False.\n5. If current > previous → reset duplicate count to 1.\n6. Update previous value and continue.\n7. Return True if all checks pass.\n\nEdge Cases:\n- Empty or single-element list → True.\n- Two consecutive identical values → allowed (count = 2).\n- Three or more consecutive identical values → False.\n- Non-consecutive duplicates (e.g., [1,2,1]) → caught by ascending check.\n- All elements identical with length > 2 → False.\n\nValidation:\n- Input must be a list of comparable elements (typically non-negative integers).\n- The allowed duplicate maximum is a configurable parameter (default 2).",
+    "source_task_id": "HumanEval/126",
+    "sequence_index": 63
+  },
+  {
+    "id": "skl-76525ca473fc",
+    "name": "sign-product-magnitude-sum",
+    "description": "When a problem requires computing the product of all signs (1, -1, or 0) of a list of integers multiplied by the sum of their absolute values, where any zero forces the entire result to zero.",
+    "content": "1. Guard for empty input: return None (or specified default) immediately.\n2. Initialize magnitude_sum = 0 and sign_product = 1.\n3. Iterate each number in a single pass:\n   a. magnitude_sum += abs(num)\n   b. Multiply sign_product by the sign of num: 1 if >0, -1 if <0, 0 if ==0.\n4. Return magnitude_sum * sign_product.\n5. Optimization: once sign_product becomes 0, the final result is guaranteed 0 — return 0 immediately without finishing the magnitude sum.\n6. Edge cases: empty array → None; any zero present → 0; all positive → sum of values; odd negatives → negative of magnitude sum; even negatives → magnitude sum.\n7. Validation: input must be a list of integers; non-integer or non-numeric elements should raise TypeError.",
+    "source_task_id": "HumanEval/128",
+    "sequence_index": 64
+  },
+  {
+    "id": "skl-c4c3578901b0",
+    "name": "resolve-forward-reference-recurrence",
+    "description": "When a recurrence relation references future terms (e.g., f(n) depends on f(n+1)), use algebraic substitution to eliminate the forward reference and obtain a purely backward recurrence.",
+    "content": "1. Identify forward-referenced terms in the recurrence (terms like f(n+k) with k>0).\n2. Determine if those forward-referenced terms have a closed-form or simpler definition (e.g., based on parity: even n gives f(n)=1+n/2).\n3. Substitute the closed-form into the original recurrence to eliminate the forward reference. For example, if f(n)=f(n-1)+f(n-2)+f(n+1) for odd n, and n+1 is even so f(n+1)=1+(n+1)/2, then f(n)=f(n-1)+f(n-2)+1+(n+1)/2.\n4. Implement iteratively: compute base cases first, then fill forward using the resolved backward-only recurrence.\nEdge cases: handle n=0 and any explicitly-given base values (e.g., f(1)=3) that override the general rule; ensure the substitution does not create circular dependencies; verify the forward term's closed-form applies at the given n.\nValidation: check computed values against provided examples; confirm the resolved recurrence reproduces base cases consistently.",
+    "source_task_id": "HumanEval/130",
+    "sequence_index": 65
+  },
+  {
+    "id": "skl-c41cff80be1b",
+    "name": "standalone-last-character-check",
+    "description": "When you need to verify if the last character of a string is a standalone character (not part of a word/group) and meets a specific condition like being alphabetical",
+    "content": "1. Return False immediately if the string is empty.\n2. Check if the last character meets the primary condition (e.g., txt[-1].isalpha()). If not, return False.\n3. Check if the last character is standalone: if the string length is 1, it is standalone; otherwise, check if the second-to-last character is a space (txt[-2] == ' ').\n4. Edge cases: empty string returns False; trailing whitespace means last char is not a letter; a single alphabetical character returns True; a letter at the end of a multi-character word (no preceding space) returns False.",
+    "source_task_id": "HumanEval/134",
+    "sequence_index": 67
+  },
+  {
+    "id": "skl-8f8d7a8a7aab",
+    "name": "conditional-extrema-tracking",
+    "description": "When you need to find different extrema (min/max) for different subsets of elements in a single collection, tracked in one pass with None sentinels for missing categories",
+    "content": "1. Initialize each extremum variable to None as a sentinel for 'not found'.\n2. Iterate through the collection in a single pass.\n3. For each element, determine which category it belongs to (e.g., negative vs positive, even vs odd) and skip elements that fit no category (e.g., zero).\n4. Update the relevant extremum: if the sentinel is None OR the current element beats the stored value (use > for tracking a maximum, < for tracking a minimum), assign it.\n5. Return all tracked extrema (e.g., as a tuple).\n\nEdge cases:\n- Empty collection: all results stay None.\n- All elements fall into one category: the other category's result stays None.\n- Boundary elements (e.g., 0 when partitioning by sign): must be explicitly excluded so they don't pollute either extremum.\n- Duplicate extrema: harmless, idempotent updates.\n\nValidation:\n- Confirm the comparison direction matches the desired extremum per category (max uses >, min uses <).\n- Ensure the None-sentinel check is performed before the numeric comparison to avoid TypeError.\n- Verify that elements outside all categories are skipped, not defaulted.",
+    "source_task_id": "HumanEval/136",
+    "sequence_index": 68
+  },
+  {
+    "id": "skl-74f1c69d51ac",
+    "name": "fraction-product-whole-check",
+    "description": "When you need to determine if the product of two fractions (given as strings in 'numerator/denominator' format) evaluates to a whole number",
+    "content": "1. Parse each fraction string by splitting on '/' and mapping parts to integers. 2. Multiply the two numerators together to get the combined numerator. 3. Multiply the two denominators together to get the combined denominator. 4. Return True if (combined_numerator % combined_denominator == 0), else False. Edge cases: a zero numerator yields a product of 0 which is a whole number (returns True); denominators are assumed non-zero per valid-fraction constraints. Validation: confirm each input matches the '<int>/<int>' pattern and has a non-zero denominator before parsing.",
+    "source_task_id": "HumanEval/144",
+    "sequence_index": 72
+  },
+  {
+    "id": "skl-1ee6741b8b67",
+    "name": "filter-by-digit-properties",
+    "description": "Applies when filtering or evaluating numbers based on the properties of their individual digits (e.g., first/last digit, even/odd).",
+    "content": "Method:\n1. Convert the number to a string to easily index specific digits (e.g., `s[0]` for the first, `s[-1]` for the last).\n2. Convert the extracted string characters back to integers if mathematical operations (like modulo for even/odd) are needed.\n3. Apply the required logical conditions to the extracted digits.\n\nEdge Cases:\n- Negative numbers: `str(-15)` yields `\"-15\"`, so `s[0]` is `\"-\"`. Use `str(abs(num))` to avoid `ValueError` when converting back to `int`.\n- Single-digit numbers: First and last digits are the same.\n\nValidation:\n- Ensure the number is not empty or handle zero appropriately.",
+    "source_task_id": "HumanEval/146",
+    "sequence_index": 73
+  },
+  {
+    "id": "skl-b8cdf076512f",
+    "name": "int-to-roman-greedy",
+    "description": "Applies when converting an integer to Roman numeral string (or similar symbol-value systems) using a greedy subtraction approach with a pre-defined ordered mapping.",
+    "content": "Method:\n1. Define an ordered list of (value, symbol) pairs in descending order. Critically, include subtractive combinations (900→cm, 400→cd, 90→xc, 40→xl, 9→ix, 4→iv) alongside standard values (1000→m, 500→d, 100→c, 50→l, 10→x, 5→v, 1→i).\n2. Initialize an empty result string.\n3. Iterate the mapping in order; for each pair, while the remaining number >= value, append the symbol and subtract the value.\n4. Return the accumulated string (lowercase if required).\n\nEdge cases:\n- Minimum input (1) yields 'i'; maximum (1000) yields 'm'.\n- Without subtractive pairs in the mapping, values like 4, 9, 40, 90, 400, 900 would produce non-canonical output (e.g., 'iiii' instead of 'iv').\n- Mapping must be strictly descending so the greedy choice is always optimal.\n\nValidation:\n- Confirm input is within the supported range before processing.\n- Confirm output contains only valid Roman numeral characters.\n- Optionally round-trip: parse the output back to an integer and verify it equals the input.",
+    "source_task_id": "HumanEval/156",
+    "sequence_index": 78
+  },
+  {
+    "id": "skl-af09e698c4d4",
+    "name": "multi-criteria-min-max",
+    "description": "Applies when selecting an element from an iterable based on multiple criteria, some ascending and some descending.",
+    "content": "1. Identify the selection criteria (e.g., maximize X, minimize Y).\n2. Construct a tuple key where each element corresponds to a criterion.\n3. For criteria to be maximized, use their negated value (e.g., `-X`).\n4. For criteria to be minimized, use their original value (e.g., `Y`).\n5. Use `min(iterable, key=lambda x: (-X, Y))` to find the optimal element.\nEdge cases: Negation only works for numeric values. For non-numeric values, custom logic or sorting might be required.\nValidation: Verify the result against the original criteria.",
+    "source_task_id": "HumanEval/158",
+    "sequence_index": 79
+  },
+  {
+    "id": "skl-5e36b9ffd20a",
+    "name": "build-and-eval-expression-string",
+    "description": "When you need to construct and evaluate a mathematical expression from structured data such as parallel lists of operators and operands, where Python operator precedence must be respected.",
+    "content": "Method: (1) Convert all operands to their string representations. (2) Interleave operand strings with operator strings to form a single expression string (e.g., '2 + 3 * 4 - 5'). (3) Pass the string to eval() which naturally applies Python's operator precedence rules. (4) Return the result as an int. Edge cases: single operand with no operators — return the operand directly without calling eval; floor division by zero raises ZeroDivisionError; very large exponents can cause memory overflow. Validation: assert len(operators) == len(operands) - 1; assert every operator is one of '+', '-', '*', '//', '**'; assert all operands are non-negative integers.",
+    "source_task_id": "HumanEval/160",
+    "sequence_index": 80
+  }
+]

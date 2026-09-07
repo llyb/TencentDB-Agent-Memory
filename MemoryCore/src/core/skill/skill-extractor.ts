@@ -58,6 +58,8 @@ export interface ExtractorOptions {
   headChars?: number;
   /** Transcript head-tail truncation: chars to keep from the end (default 32000). */
   tailChars?: number;
+  /** Select literal head/tail or message-aware transcript compaction. */
+  transcriptStrategy?: "head_tail" | "structured";
   /**
    * Skill review 单次 LLM 调用输出 token 上限。不填 → 由 runner 继承 llm.maxTokens。
    * 与 llm.maxTokens 独立配置：skill review 输出（含 tool-call 参数里的 SKILL.md
@@ -102,6 +104,7 @@ export class SkillExtractor {
   private readonly maxIterations: number;
   private readonly headChars: number;
   private readonly tailChars: number;
+  private readonly transcriptStrategy: "head_tail" | "structured";
   private readonly maxTokens?: number;
   private readonly prefixSkillsLimit: number;
   private readonly logger?: ExtractorOptions["logger"];
@@ -113,6 +116,7 @@ export class SkillExtractor {
     this.maxIterations = opts.maxIterations ?? 16;
     this.headChars = opts.headChars ?? 8000;
     this.tailChars = opts.tailChars ?? 32000;
+    this.transcriptStrategy = opts.transcriptStrategy ?? "head_tail";
     this.maxTokens = opts.maxTokens;
     // 构造器默认 0 (关闭前缀注入 → 不会触发额外的 query-gen LLM 调用);
     // 生产 wiring 会显式传入 resolved.extraction.prefixSkillsLimit (默认 20)。
@@ -136,8 +140,9 @@ export class SkillExtractor {
     // 内部 try/catch + FileLogger + 后端降级，logger 挂了也不影响抽取本身。
     const t0 = Date.now();
     const transcript = formatTranscript(messages);
-
-    const truncated = truncateHeadTail(transcript, this.headChars, this.tailChars);
+    const truncated = this.transcriptStrategy === "structured"
+      ? formatStructuredTranscript(messages, this.headChars + this.tailChars)
+      : truncateHeadTail(transcript, this.headChars, this.tailChars);
 
     // 预检索 skill 列表, 塞在 user prompt 前面, 让 review agent 一进场就能看到
     // agent 自己已经拥有哪些 skill (避免盲目 skill_create 撞 SKILL_NAME_DUPLICATE)。
@@ -290,6 +295,9 @@ export class SkillExtractor {
       candidates: auditSink.length,
       prompt_chars: prompt.length,
       prefix_mode: prefixMode,
+      transcript_strategy: this.transcriptStrategy,
+      transcript_chars: transcript.length,
+      selected_transcript_chars: truncated.length,
       // 只截前 60 字符 (够识别关键词; 长了对 obs 无用)。
       prefix_query: prefixQuery ? prefixQuery.slice(0, 60) : undefined,
     });
@@ -302,6 +310,9 @@ export class SkillExtractor {
         msg_count: messages.length,
         candidates: auditSink.length,
         prompt_chars: prompt.length,
+        transcript_strategy: this.transcriptStrategy,
+        transcript_chars: transcript.length,
+        selected_transcript_chars: truncated.length,
         dur_ms: dur,
         success: true,
       });
@@ -421,14 +432,95 @@ export class SkillExtractor {
  * f546ab8c-c7c5-4598-a310-6b2162372e7c，抽取 LLM 完全忽略 SKILL_REVIEW_PROMPT
  * 契约，产出 1235 tokens 的主对话续写，零 tool call、零 "Nothing to save."）。
  */
-function formatTranscript(messages: ExtractMessage[]): string {
-  const body = messages.map((m) => `<<past-${m.role}>>\n${m.content}`).join("\n\n");
+export function formatTranscript(messages: ExtractMessage[]): string {
+  const body = messages.map((m, index) =>
+    `<<past-${m.role}>>\n<<message-index:${index}>>\n${m.content}`).join("\n\n");
   return `${body}\n\n<<end-of-transcript>>\nAbove is the past conversation to review. Now decide, and respond only per the output contract in the system prompt.`;
 }
 
-function truncateHeadTail(s: string, head: number, tail: number): string {
-  if (s.length <= head + tail) return s;
-  return `${s.slice(0, head)}\n\n... [truncated ${s.length - head - tail} chars] ...\n\n${s.slice(-tail)}`;
+export function truncateHeadTail(s: string, head: number, tail: number): string {
+  const safeHead = Math.max(0, Math.floor(head));
+  const safeTail = Math.max(0, Math.floor(tail));
+  if (s.length <= safeHead + safeTail) return s;
+  const headPart = safeHead > 0 ? s.slice(0, safeHead) : "";
+  const tailPart = safeTail > 0 ? s.slice(-safeTail) : "";
+  return `${headPart}\n\n... [truncated ${s.length - safeHead - safeTail} chars] ...\n\n${tailPart}`;
+}
+
+/**
+ * Message-aware transcript compaction. It keeps the initial goal, the latest
+ * outcome, and complete adjacent tool_call/tool_result pairs before ordinary
+ * exploration. Selected units remain in chronological order.
+ */
+export function formatStructuredTranscript(
+  messages: ExtractMessage[],
+  maxChars: number,
+): string {
+  const full = formatTranscript(messages);
+  if (maxChars <= 0) return "<<end-of-transcript>>\nTranscript omitted by configured budget.";
+  if (full.length <= maxChars) return full;
+
+  type Unit = { indexes: number[]; priority: number };
+  const units: Unit[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const current = messages[i]!;
+    if (current.role === "tool_call" && messages[i + 1]?.role === "tool_result") {
+      units.push({ indexes: [i, i + 1], priority: 70 });
+      i++;
+    } else {
+      units.push({
+        indexes: [i],
+        priority: current.role === "user" ? 50 : current.role === "assistant" ? 40 : 60,
+      });
+    }
+  }
+
+  const firstUser = messages.findIndex((m) => m.role === "user");
+  const lastUser = messages.findLastIndex((m) => m.role === "user");
+  const lastAssistant = messages.findLastIndex((m) => m.role === "assistant");
+  for (const unit of units) {
+    if (unit.indexes.includes(firstUser)) unit.priority += 1_000;
+    if (unit.indexes.includes(lastUser)) unit.priority += 900;
+    if (unit.indexes.includes(lastAssistant)) unit.priority += 800;
+    unit.priority += Math.max(...unit.indexes) / Math.max(1, messages.length);
+  }
+
+  const footer = "\n\n<<end-of-transcript>>\nAbove is a structured selection of the past conversation. Review only the evidence shown.";
+  const available = Math.max(0, maxChars - footer.length);
+  const selected = new Set<number>();
+  let used = 0;
+  const renderUnit = (unit: Unit) => unit.indexes
+    .map((index) => `<<past-${messages[index]!.role}>>\n<<message-index:${index}>>\n${messages[index]!.content}`)
+    .join("\n\n");
+
+  for (const unit of [...units].sort((a, b) => b.priority - a.priority)) {
+    const rendered = renderUnit(unit);
+    const separator = selected.size > 0 ? 2 : 0;
+    if (used + separator + rendered.length > available) continue;
+    unit.indexes.forEach((index) => selected.add(index));
+    used += separator + rendered.length;
+  }
+
+  // Extremely large messages may prevent every unit from fitting. Preserve a
+  // bounded piece of the first goal rather than returning an empty transcript.
+  if (selected.size === 0 && messages.length > 0 && available > 0) {
+    selected.add(firstUser >= 0 ? firstUser : 0);
+  }
+
+  const body = [...selected]
+    .sort((a, b) => a - b)
+    .map((index) => {
+      const prefix = `<<past-${messages[index]!.role}>>\n<<message-index:${index}>>\n`;
+      const remaining = Math.max(0, available - prefix.length);
+      const content = messages[index]!.content;
+      if (content.length <= remaining) return prefix + content;
+      const marker = "\n... [truncated]";
+      if (remaining <= marker.length) return prefix + marker.slice(0, remaining);
+      return prefix + content.slice(0, remaining - marker.length) + marker;
+    })
+    .join("\n\n");
+
+  return `${body}${footer}`.slice(0, maxChars);
 }
 
 /**

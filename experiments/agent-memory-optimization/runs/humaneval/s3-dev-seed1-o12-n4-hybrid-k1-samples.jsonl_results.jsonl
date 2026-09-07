@@ -1,0 +1,4 @@
+{"task_id": "HumanEval/24", "completion": "\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return n // i\n    return 1", "result": "passed", "passed": true}
+{"task_id": "HumanEval/26", "completion": "\n    seen = set()\n    duplicates = set()\n    for num in numbers:\n        if num in seen:\n            duplicates.add(num)\n        else:\n            seen.add(num)\n    return [num for num in numbers if num not in duplicates]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/28", "completion": "\n    return ''.join(strings)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/30", "completion": "\n    return [x for x in l if x > 0]", "result": "passed", "passed": true}

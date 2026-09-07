@@ -27,6 +27,8 @@ export interface SkillConfigInput {
     hybridAlpha?: number;
     searchTopK?: number;
     charBudgetPercent?: number;
+    /** Reference context chars used to derive the absolute listing budget. */
+    contextWindowChars?: number;
     fastPathMinNameLength?: number;
   };
 
@@ -35,15 +37,22 @@ export interface SkillConfigInput {
     toolCallThreshold?: number;
     model?: string;
     maxIterations?: number;
+    promptVersion?: "legacy" | "evidence";
+    transcriptStrategy?: "head_tail" | "structured";
     /**
-     * 单一"归档尺寸"旋钮（字节）。默认 40960 (40KB)。派生 7 个内部字段:
-     *   • Handler 的 bytesThreshold / requestCompressThresholdBytes = archiveBytes
+     * 向后兼容的"归档尺寸"旋钮（字节）。默认 40960 (40KB)。作为下列
+     * 独立字段未配置时的 buffer/oversize 默认值:
+     *   • Handler 的 bytesThreshold / requestCompressThresholdBytes
      *   • Oversize 兜底的 chunkMaxBytes = 2 × archiveBytes
      *   • Oversize 兜底的 headKeepBytes / tailKeepBytes = archiveBytes
-     *   • Extractor transcript 截断的 headChars / tailChars = archiveBytes
-     * 语义: 归档 payload 目标大小 = archiveBytes，上限 = 2 × archiveBytes。
+     * Transcript 的 headChars / tailChars 独立配置，默认 8000 / 32000。
      */
     archiveBytes?: number;
+    /** Independently tunable archive/compression and transcript budgets. */
+    bytesThreshold?: number;
+    requestCompressThresholdBytes?: number;
+    headChars?: number;
+    tailChars?: number;
     /** Skill review 单次 LLM 调用输出 token 上限。不填 → 继承顶层 llm.maxTokens。 */
     maxTokens?: number;
     /**
@@ -108,6 +117,8 @@ export interface ResolvedSkillConfig {
     hybridAlpha: number;
     searchTopK: number;
     charBudgetPercent: number;
+    contextWindowChars: number;
+    listingCharBudget: number;
     fastPathMinNameLength: number;
   };
 
@@ -116,7 +127,9 @@ export interface ResolvedSkillConfig {
     toolCallThreshold: number;
     model?: string;
     maxIterations: number;
-    /** 归档尺寸旋钮 (字节)。用户可见配置源；下面 7 个字段由它派生。 */
+    promptVersion: "legacy" | "evidence";
+    transcriptStrategy: "head_tail" | "structured";
+    /** 归档尺寸兼容旋钮 (字节)，为未单独配置的 buffer/oversize 字段提供默认值。 */
     archiveBytes: number;
     /** Skill review 单次 LLM 调用输出 token 上限；不填 → 由 runner 继承 llm.maxTokens。 */
     maxTokens?: number;
@@ -125,10 +138,9 @@ export interface ResolvedSkillConfig {
      * 默认 20。
      */
     prefixSkillsLimit: number;
-    // ↓↓↓ 以下 7 个由 archiveBytes 派生，用户不直接配 ↓↓↓
-    /** Handler: buffer 累计字节 ≥ 触发归档。= archiveBytes。 */
+    /** Handler: buffer 累计字节 ≥ 触发归档。默认 = archiveBytes。 */
     bytesThreshold: number;
-    /** Handler: 单次 add 请求 ≥ 强制走压缩路径。= archiveBytes。 */
+    /** Handler: 单次 add 请求 ≥ 强制走压缩路径。默认 = archiveBytes。 */
     requestCompressThresholdBytes: number;
     /** Oversize 兜底: 归档 payload > 触发切分。= 2 × archiveBytes。 */
     chunkMaxBytes: number;
@@ -136,9 +148,9 @@ export interface ResolvedSkillConfig {
     headKeepBytes: number;
     /** Oversize 兜底: 切完保留的尾字节。= archiveBytes。 */
     tailKeepBytes: number;
-    /** Extractor transcript 截断: 保留头字符。= archiveBytes (字节数近似当字符数)。 */
+    /** Extractor transcript 截断: 保留头字符。默认 8000。 */
     headChars: number;
-    /** Extractor transcript 截断: 保留尾字符。= archiveBytes。 */
+    /** Extractor transcript 截断: 保留尾字符。默认 32000。 */
     tailChars: number;
   };
 
@@ -225,6 +237,14 @@ export interface IdFields {
 
 /** skill 状态。与 interface.yaml 对齐：active 或 archived。 */
 export type SkillStatus = "active" | "archived";
+
+/** Optional applicability boundary for automatically extracted Skills. */
+export interface SkillScope {
+  repo?: string;
+  path_globs?: string[];
+  languages?: string[];
+  versions?: string[];
+}
 
 /** manifest_json 列里的单个资源元信息。字节不在此类型中。 */
 export interface SkillManifestEntry {

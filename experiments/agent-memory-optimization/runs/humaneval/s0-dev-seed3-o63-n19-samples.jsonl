@@ -1,0 +1,19 @@
+{"task_id":"HumanEval/126","completion":"\n"}
+{"task_id":"HumanEval/128","completion":"\n    if not arr:\n        return None\n    sign_product = 1\n    magnitude_sum = 0\n    for num in arr:\n        if num > 0:\n            sign = 1\n        elif num < 0:\n            sign = -1\n        else:\n            sign = 0\n        sign_product *= sign\n        magnitude_sum += abs(num)\n    return sign_product * magnitude_sum"}
+{"task_id":"HumanEval/130","completion":"\n"}
+{"task_id":"HumanEval/132","completion":"\n"}
+{"task_id":"HumanEval/134","completion":"\n"}
+{"task_id":"HumanEval/136","completion":"\n    a = None\n    b = None\n    for num in lst:\n        if num < 0:\n            if a is None or num > a:\n                a = num\n        elif num > 0:\n            if b is None or num < b:\n                b = num\n    return (a, b)"}
+{"task_id":"HumanEval/138","completion":"\n    return n >= 8 and n % 2 == 0"}
+{"task_id":"HumanEval/140","completion":"\n"}
+{"task_id":"HumanEval/142","completion":"\n"}
+{"task_id":"HumanEval/144","completion":"\n    num1, den1 = map(int, x.split('/'))\n    num2, den2 = map(int, n.split('/'))\n    return (num1 * num2) % (den1 * den2) == 0"}
+{"task_id":"HumanEval/146","completion":"\n    count = 0\n    for num in nums:\n        if num > 10:\n            s = str(num)\n            if int(s[0]) % 2 != 0 and int(s[-1]) % 2 != 0:\n                count += 1\n    return count"}
+{"task_id":"HumanEval/148","completion":"\n"}
+{"task_id":"HumanEval/150","completion":"\n"}
+{"task_id":"HumanEval/152","completion":"\n    return [abs(g - s) for g, s in zip(guess, game)]"}
+{"task_id":"HumanEval/154","completion":"\n"}
+{"task_id":"HumanEval/156","completion":"\n    roman = ''\n    for v, s in [(1000,'m'),(900,'cm'),(500,'d'),(400,'cd'),(100,'c'),(90,'xc'),(50,'l'),(40,'xl'),(10,'x'),(9,'ix'),(5,'v'),(4,'iv'),(1,'i')]:\n        while number >= v:\n            roman += s\n            number -= v\n    return roman"}
+{"task_id":"HumanEval/158","completion":"\n    best_word = \"\"\n    max_unique = -1\n    for word in words:\n        unique_count = len(set(word))\n        if unique_count > max_unique or (unique_count == max_unique and word < best_word):\n            max_unique = unique_count\n            best_word = word\n    return best_word"}
+{"task_id":"HumanEval/160","completion":"\n"}
+{"task_id":"HumanEval/162","completion":"\n    if not text:\n        return None\n    import hashlib\n    return hashlib.md5(text.encode('utf-8')).hexdigest()"}

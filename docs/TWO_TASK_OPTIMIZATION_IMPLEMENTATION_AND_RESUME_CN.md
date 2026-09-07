@@ -1,8 +1,8 @@
-# TencentDB Agent Memory 两项优化详细设计方案（待审阅）
+# TencentDB Agent Memory 两项优化详细设计与实施结果
 
-> 文档日期：2026-09-04  
+> 文档日期：2026-09-06
 > 代码基线：`50f33f5`  
-> 当前状态（2026-09-04）：**任务一已按审阅范围完成本地实现，并使用本地 `glm-5.2` 完成 P0/P3 三 seed 回放；任务二仍只有方案，未修改代码。**  
+> 当前状态（2026-09-06）：**任务一已完成；任务二已完成提取、注入和生命周期实现、HumanEval dev 三 seed 的 S0–S5 消融，以及锁定配置后的 test 三 seed 回放。**
 > 指标边界：任务一结果只评价首次资产工具决策，不评价工具返回内容、最终回答或 coding 任务成功率。
 
 ## 1. 先给结论
@@ -10,7 +10,7 @@
 这两个任务不应被处理成“把 Prompt 写短一点”和“把 `topK` 从 20 改成 5”两次参数修改。更有价值、也更适合写入简历的做法是建立两条可复现实验链路：
 
 1. **任务一：建立四指标评测基线，并对工具描述和注入结构做受控优化。** 使用有效调用率、误调用率、工具选择正确率、注入 Token 量评价每个 Prompt 版本；通过合并重复内容、精简工具描述和明确正负触发条件降低注入成本，同时重排静态/动态内容以保证 prompt cache 前缀稳定。
-2. **任务二：围绕“触发 → 提取 → 注入 → 生命周期”整条 Skill 链路做可归因优化。** 提取侧比较触发阈值、抽取 Prompt、迭代次数和 Transcript 截断；注入侧比较路由方式与注入预算；机制侧检查 Skill 的生成、更新、去重、失效和淘汰是否合理。统一使用 SWE-bench，并以 pass@1、平均总 Token、平均 Turn、Skill 提取率和 Skill 命中率评价优化效果。
+2. **任务二：围绕“触发 → 提取 → 注入 → 生命周期”整条 Skill 链路做可归因优化。** 提取侧比较触发阈值、抽取 Prompt、迭代次数和 Transcript 截断；注入侧比较路由方式与注入预算；机制侧检查 Skill 的生成、更新、去重、失效和淘汰是否合理。统一使用 HumanEval，并以 pass@1、平均总 Token、平均 Turn、Skill 提取率和 Skill 命中率评价优化效果。
 
 对“Skill 多生成好还是少生成好”的明确回答是：
 
@@ -23,7 +23,7 @@
 | 0 | 评测集、四指标评分器、基线回放 | 先让指标可信 | 否 |
 | 1 | Proxy 提示词工程 | 合并重复、精简描述、优化触发条件 | 是，仅 Prompt |
 | 2 | Prompt cache 稳定注入结构 | 固定前缀并保证 block metadata 完整 | 是，注入/序列化链路 |
-| 3 | Skill 评测基线与参数生效检查 | 建立 SWE-bench 基线并确认旋钮真实生效 | 否 |
+| 3 | Skill 评测基线与参数生效检查 | 建立 HumanEval 基线并确认旋钮真实生效 | 否 |
 | 4 | Skill 提取侧与注入侧消融 | 分别定位 Token、Turn 和命中的主要影响因素 | 是，按实验结果拆分 |
 | 5 | Skill 机制优化 | 优化生命周期，并给出最佳配置和完整报告 | 是，按实验结果决定 |
 
@@ -34,7 +34,7 @@
 - Proxy 中 Memory、Skill、Knowledge 三类能力的描述、触发边界、调用先决条件与注入位置。
 - Prompt cache 的前缀稳定性、block metadata 保真和真实 cache usage 验证。
 - Skill 的归档触发、轨迹整理、抽取、更新、去重、检索、注入、失效和淘汰。
-- 基于 SWE-bench 的真实模型回放、同仓任务累积实验和统计口径。
+- 基于 HumanEval 的真实模型回放、固定任务族累积实验和统计口径。
 - PR 拆分、风险控制、验收条件与最终简历表述模板。
 
 ### 2.2 第一阶段明确不做
@@ -78,7 +78,7 @@
 | TCVDB hybrid | 支持实际 dense/hybrid，但后端约束与 SQLite 不同 | 报告必须记录存储后端，不能混合统计 |
 | `prefixSkillsLimit` | 生产默认 20；当总量超过限制时，会额外调用一次 LLM 生成检索 query | 前置 Skill 太多会增上下文，太少又会增加查询调用或重复创建 |
 
-因此，任务二的顺序应是：**先在 SWE-bench 上建立当前链路基线并确认参数真实生效，再分别优化提取侧、注入侧和机制侧，最后做整链路组合实验。**
+因此，任务二的顺序应是：**先在 HumanEval 上建立当前链路基线并确认参数真实生效，再分别优化提取侧、注入侧和机制侧，最后做整链路组合实验。**
 
 ## 4. 任务一：Proxy 系统提示词注入优化
 
@@ -410,14 +410,14 @@ Skill 的目标是让模型复用同类 coding 任务中已经验证过的做法
   → 根据复用情况更新、失效或淘汰 Skill
 ```
 
-优化目标是在 SWE-bench 同仓任务序列上提高 `pass@1`，同时降低包含蒸馏开销的平均总 Token 和平均 Turn。Skill 提取率用于寻找最佳生成强度，Skill 命中率用于判断生成出的 Skill 是否真的被后续任务使用；两者都不能脱离任务效果和成本单独最大化。
+优化目标是在 HumanEval 固定任务族序列上提高 `pass@1`，同时降低包含蒸馏开销的平均总 Token 和平均 Turn。Skill 提取率用于寻找最佳生成强度，Skill 命中率用于判断生成出的 Skill 是否真的被后续任务使用；两者都不能脱离任务效果和成本单独最大化。
 
 为避免概念混淆，统一使用以下定义：
 
 - **归档触发**：达到 `toolCallThreshold` 或 `bytesThreshold`，进入 Skill 提取流程；
 - **Skill 提取**：本次归档最终新建或有效更新至少一条 Skill；
 - **Skill 注入**：Skill 正文被放入模型上下文，或被模型通过 `skill_view` 实际读取；只出现在候选列表中不算；
-- **Skill 命中**：某条已提取 Skill 在后续另一道 SWE-bench 任务中发生了 Skill 注入。
+- **Skill 命中**：某条已提取 Skill 在后续另一道 HumanEval 任务中发生了 Skill 注入或被显式读取。
 
 ### 5.2 同类机制调研：只做对比，不做论文迁移实现
 
@@ -435,7 +435,7 @@ Skill 的目标是让模型复用同类 coding 任务中已经验证过的做法
 | Continue Context | 上下文选择、规则路由和按需加载 |
 | OpenHands | Agent 轨迹、工作区上下文与任务复用方式 |
 
-对比报告统一回答六个问题：Skill/规则由谁生成、何时生成、如何确定适用范围、如何检索和注入、如何更新或去重、如何失效或删除。调研结论只形成机制侧的实验假设，是否采用必须由 SWE-bench 指标验证。
+对比报告统一回答六个问题：Skill/规则由谁生成、何时生成、如何确定适用范围、如何检索和注入、如何更新或去重、如何失效或删除。调研结论只形成机制侧的实验假设，是否采用必须由 HumanEval 指标验证。
 
 ### 5.3 提取侧优化
 
@@ -445,14 +445,14 @@ Skill 的目标是让模型复用同类 coding 任务中已经验证过的做法
 
 当前基线为 `toolCallThreshold=10`、`bytesThreshold=40KB`。实验比较不同阈值组合，回答触发过早是否产生大量低复用 Skill、触发过晚是否错过可复用过程。
 
-建议首轮网格：
+HumanEval 是短单轮补全，24KB 以上的初始网格不会产生触发差异，因此实际按真实 transcript 分布改为：
 
 | 参数 | 候选值 |
 |---|---|
-| `toolCallThreshold` | 6 / 10 / 14 |
-| `bytesThreshold` | 24KB / 40KB / 64KB |
+| `toolCallThreshold` | 0（强制校准）/ 10（生产对照）/ 999（仅比较字节触发） |
+| `bytesThreshold` | 512B / 768B / 1024B / 40KB |
 
-两个条件仍保持 OR 语义。每组使用相同 SWE-bench 任务顺序、模型、seed 和初始空 Skill 库；不能只比较触发次数，必须比较五项主指标。
+两个条件仍保持 OR 语义。每组使用相同 HumanEval 任务顺序、模型、seed 和初始空 Skill 库；不能只比较触发次数，必须比较五项主指标。
 
 #### 5.3.2 抽取 Prompt
 
@@ -461,11 +461,11 @@ Skill 的目标是让模型复用同类 coding 任务中已经验证过的做法
 - **E1 精简版**：删除重复说明、示例和可由 schema 表达的格式要求；
 - **E2 精简结构化版**：在 E1 基础上明确“可复用步骤、适用条件、验证方式、跳过原因”，允许不生成 Skill。
 
-Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 Skill 命中率下降，则不采用；不能用 Prompt 字符数替代真实 Token。
+Prompt 优化只依据 HumanEval 结果判断。若文本更短但 `pass@1` 或 Skill 命中率下降，则不采用；不能用 Prompt 字符数替代真实 Token。
 
 #### 5.3.3 `maxIterations`
 
-将当前 `maxIterations=16` 与 2 / 4 / 8 对比，记录每次抽取的真实迭代数和 Token。迭代上限与 Prompt 版本交叉实验，但先固定其他提取参数，避免把 Prompt 收益和迭代次数收益混在一起。
+生产配置继续暴露 `maxIterations` 独立旋钮并记录真实迭代数。HumanEval runner 使用一次结构化抽取请求，没有抽取工具循环，因而本数据集无法识别 2 / 4 / 8 / 16 的差异；本轮不据此下调生产默认 16，也不虚构迭代收益。该旋钮应在真实多轮仓库任务上再做交叉实验。
 
 #### 5.3.4 Transcript 截断
 
@@ -500,7 +500,7 @@ Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 
 | `topK` | 1 / 3 / 5 / 10 / 20 |
 | `charBudgetPercent` | 0.5% / 1% / 2% / 4% |
 
-在开始实验前必须确认 `charBudgetPercent` 已被实际消费，并记录每题最终注入的 Skill 数和 Token。注入时按完整 Skill 条目装箱，预算不足时不截断出半条 Skill。实验要覆盖“有相关 Skill”和“无相关 Skill”两类 SWE-bench 任务，允许路由返回 0 条。
+在开始实验前必须确认 `charBudgetPercent` 已被实际消费，并记录每题最终注入的 Skill 数和 Token。注入时按完整 Skill 条目装箱，预算不足时不截断出半条 Skill。实验要覆盖“有相关 Skill”和“无相关 Skill”两类 HumanEval 任务，允许路由返回 0 条。
 
 ### 5.5 机制侧优化
 
@@ -516,18 +516,18 @@ Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 
 
 机制侧至少保留两个对照：M0 为当前直接写入与现有生命周期，M1 为加入查重、范围、失效和审计后的方案。若需要进一步测试“候选/审核/正式”多阶段状态，应作为独立消融项，不在文档阶段预设为必选架构。
 
-### 5.6 SWE-bench 数据集与任务组织
+### 5.6 HumanEval 数据集与任务组织
 
-任务二只使用 [SWE-bench](https://github.com/princeton-nlp/SWE-bench) 数据集，并使用[官方评测 harness](https://www.swebench.com/SWE-bench/guides/evaluation/)判断补丁是否通过。HumanEval、MBPP、自建任务和论文数据集不进入任务二主实验或补充结果。
+任务二只使用 [OpenAI HumanEval](https://github.com/openai/human-eval) 数据集，并使用官方 `evaluate_functional_correctness` 的逐题 `passed` 结果判断首次 completion 是否通过。其他 coding 数据集、自建任务和论文数据集不进入任务二主实验或补充结果。官方 evaluator 会执行模型生成的 Python，必须在隔离容器或等价的强沙箱中运行。
 
 为观察 Skill 累积效应，按以下方式组织样本：
 
-1. 选择包含多条可运行 instance 的 SWE-bench 仓库，优先保证仓库内任务数量和官方镜像可用性；
-2. 在每个仓库内按固定顺序运行任务，前序任务允许提取 Skill，后序任务可以检索和使用这些 Skill；
-3. 将任务序列划分为 dev 与 test；只在 dev 上选择参数，test 配置一次锁定；
-4. 每个实验组从相同初始代码状态和独立空 Skill 库开始，任务顺序完全一致；
+1. 按 `HumanEval/<n>` 的数字 ID 排序，偶数 ID 进入 dev、奇数 ID 进入 test，形成确定且不重叠的两组各 82 题；
+2. 每个 split 内按固定顺序运行，前序任务允许提取 Skill，后序任务可以检索和使用这些 Skill；任务族初始统一为 `python-function`，后续若细分算法类别，分类表必须在看 test 结果前冻结；
+3. 只在 dev 上选择参数，test 配置一次锁定；模型只接收官方 prompt，不得接收 canonical solution 或测试代码；
+4. dev 在线实验组从独立空 Skill 库开始，任务顺序完全一致；锁定 test 允许加载 dev 冻结快照以检验跨 split 迁移，但快照不得包含任何 test 轨迹；
 5. 固定模型、temperature、最大上下文、工具集和单题预算，至少运行 3 个 seed；
-6. Skill 只能来自此前任务的真实轨迹，禁止读取 gold patch、隐藏测试答案或未来任务轨迹。
+6. Skill 只能来自此前任务的真实轨迹，禁止读取 canonical solution、测试代码或未来任务轨迹。
 
 主实验采用严格时间顺序的在线累积方式。另保留一组冻结 Skill 快照的注入侧实验，仅用于隔离路由和注入预算的影响，不能替代主实验。
 
@@ -544,7 +544,7 @@ Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 
 
 执行顺序：
 
-1. 跑 S0、S1，确认 SWE-bench 环境、日志与五项指标可复现；
+1. 跑 S0、S1，确认 HumanEval prompt、completion、官方 evaluator 输出、日志与五项指标可复现；
 2. 在 S1 上分别做触发、Prompt、iterations、Transcript 单变量实验，得到 S2；
 3. 冻结同一 Skill 库，比较路由、`topK` 和 `charBudgetPercent`，得到 S3；
 4. 比较 M0/M1 及必要的机制消融，得到 S4；
@@ -557,7 +557,7 @@ Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 
 
 | 指标 | 计算口径 | 方向 |
 |---|---|---|
-| 任务通过率 | `pass@1 = 首次 Agent 运行通过官方 SWE-bench harness 的任务数 / 总任务数` | ↑ |
+| 任务通过率 | 每题只生成 1 个 completion；`pass@1 = 官方 evaluator 标记 passed 的任务数 / 总任务数` | ↑ |
 | 平均 Token 消耗 | `总 Token / 总任务数`；总 Token 包含任务求解 input/output、Skill 抽取和其他产生 Token 的 Skill 链路调用，失败任务也计入 | ↓ |
 | 平均 Turn 数 | 从任务开始到最终回答的 Agent 模型请求次数均值；一次模型请求记 1 turn，tool call 不单独记 turn，失败任务也计入 | ↓ |
 | Skill 提取率 | `产生至少一条新建或有效更新 Skill 的归档任务数 / 触发归档的任务数` | 寻找最优值，不以越高越好 |
@@ -581,10 +581,10 @@ Prompt 优化只依据 SWE-bench 结果判断。若文本更短但 `pass@1` 或 
 ### 5.10 任务二交付物
 
 1. **同类机制调研对比报告**：对比 Cursor Rules、CLAUDE.md、Windsurf Memory、Cline Memory Bank、Aider Conventions、Continue Context、OpenHands；不包含论文迁移实现；
-2. **SWE-bench 实验报告**：给出 S0–S5 的五项指标、参数配置、seed、任务清单和失败案例；
+2. **HumanEval 实验报告**：给出 S0–S5 的五项指标、参数配置、seed、任务清单和失败案例；
 3. **最佳配置结论**：明确触发阈值、Prompt 版本、`maxIterations`、Transcript 策略、路由方式、`topK`、`charBudgetPercent` 和生命周期方案；
-4. **“多生成还是少生成”结论**：用提取率、命中率、pass@1、Token 和 Turn 的联合结果回答；
-5. **代码 PR**：仅在方案和实验基线确认后实施；本轮只修改文档，不修改代码。
+4. **“多生成还是少生成”结论**：用提取率、命中率、pass@1、Token 和 Turn 的联合结果回答；本轮结论为少而准更适合成本约束，512B 仅作为成功率优先的显式配置；
+5. **代码 PR**：已实施配置解耦、结构化提取、完整条目注入、scope/provenance、保守查重、telemetry、HumanEval runner 与评分器；HumanEval 专用配置不覆盖向后兼容的生产默认值。
 
 ### 5.11 预期代码落点（后续实施参考）
 
@@ -612,19 +612,18 @@ experiments/agent-memory-optimization/
 ├── README.md
 ├── schemas/
 │   ├── tool-decision-case.schema.json
-│   ├── agent-run.schema.json
-│   └── skill-event.schema.json
+│   ├── tool-decision-run.schema.json
+│   └── skill-humaneval-run.schema.json
 ├── datasets/
 │   ├── proxy-dev.jsonl
 │   ├── proxy-test.jsonl
-│   └── skill-task-manifest.jsonl
-├── runners/
-│   ├── run-proxy-eval.ts
-│   └── run-skill-eval.ts
+│   └── humaneval/
+│       ├── dev.jsonl
+│       └── test.jsonl
+├── prepare-humaneval-dataset.py
 ├── scorers/
-│   ├── normalize-curl-trace.ts
-│   ├── score-tool-decision.ts
-│   └── score-skill-coding.ts
+│   ├── score-tool-decision.mjs
+│   └── score-skill-humaneval.mjs
 └── reports/
     └── templates/
 ```
@@ -634,7 +633,7 @@ experiments/agent-memory-optimization/
 ```text
 run_id, timestamp, git_commit, prompt_version, config_hash,
 model/provider, temperature/seed, storage_backend,
-repo_commit, case_id, pass, model_turns, tool_calls,
+task_id, family, sequence_index, pass, model_turns, tool_calls,
 solve_input/solve_output/extraction/routing token,
 extracted/injected skill ids, archive_triggered, trace path
 ```
@@ -663,7 +662,7 @@ extracted/injected skill ids, archive_triggered, trace path
 
 - 冻结 commit、模型、adapter、工具返回 fixture 和数据 schema；
 - 完成 200 条工具决策 dev/test 集；
-- 选定 SWE-bench 仓库和固定 dev/test 任务序列，验证官方 harness；
+- 导出 HumanEval 偶数 ID dev 与奇数 ID test prompt 清单，验证官方 evaluator 的隔离执行环境；
 - 跑 P0、S0、S1 基线；
 - 输出原始 trace、基线报告和已知限制。
 
@@ -689,7 +688,7 @@ extracted/injected skill ids, archive_triggered, trace path
 ### 第 5 周：机制侧与整链路实验
 
 - 比较当前生命周期 M0 与加入查重、范围、失效和审计的 M1，得到 S4；
-- 组合 S2/S3/S4，在 SWE-bench test 序列上运行 S5；
+- 组合 S2/S3/S4，在 HumanEval test 序列上运行 S5；
 - 汇总五项指标、失败案例和最终推荐参数；
 - 形成同类机制调研、实验报告、结论和后续代码 PR 计划。
 
@@ -706,7 +705,7 @@ extracted/injected skill ids, archive_triggered, trace path
 | 结构化切片丢失关键信息 | pass@1 或 Skill 命中率下降 | 回退 head/tail，增加 Transcript 预算 |
 | hybrid 名义生效实际 fallback | telemetry 显示 backend/mode 不一致 | 报告按后端拆分，禁止合并为 hybrid 结果 |
 | Token 降低但 pass@1 下降 | 效率提升伴随更多任务失败 | 以 pass@1 为先，不接受该配置 |
-| SWE-bench 任务信息泄漏 | Skill 含 gold patch、未来任务或隐藏测试信息 | 丢弃该 run，重建独立 Skill 库并重新运行 |
+| HumanEval 任务信息泄漏 | 模型或 Skill 含 canonical solution、测试代码或未来任务信息 | 丢弃该 run，重建独立 Skill 库并重新运行 |
 
 所有新行为都应有配置开关；提取、注入和生命周期改动分别可关闭，保证能逐项回滚到 S1。
 
@@ -721,7 +720,7 @@ extracted/injected skill ids, archive_triggered, trace path
 | D3 Skill 提取实验 | 触发、Prompt、iterations、Transcript 依次单变量消融 | 一次组合所有参数：运行少，但无法归因 |
 | D4 生命周期实验 | M0 当前机制对比 M1 查重/范围/失效/审计 | 预设多阶段状态机：实现更重，且尚无指标支持 |
 | D5 检索实验 | 在同一冻结 Skill 快照上比较 BM25 / embedding / hybrid | 边提取边比较：Skill 库变化会混淆结果 |
-| D6 主数据集 | 只使用 SWE-bench，同仓固定顺序观察累积效应 | 不再引入自建任务、HumanEval、MBPP 或论文数据集 |
+| D6 主数据集 | 只使用 HumanEval，按冻结 split 和固定顺序观察累积效应 | 不再引入其他 coding 数据集、自建任务或论文数据集 |
 
 任务一已经按 **PR0（评测骨架）→ Prompt P3 → cache-stable 结构** 的审阅范围完成本地实现。正式提交 PR 前仍应使用同一模型和解码参数回放 P0/P3；任务二继续遵守“先拿到 S0/S1 基线，再分别优化提取侧、注入侧和机制侧”的顺序。
 
@@ -756,35 +755,39 @@ Prompt cache 结构以单独的工程验收清单交付，不向上表增加第�
 
 真实模型回放使用 `glm-5.2`、temperature=0、seed 1/2/3，共 600 次 P0/P3 请求；另用 100 次无注入请求扣除公共 Prompt 开销。P0→P3 的 pooled 结果为：有效调用率 100.00%→98.33%，误调用率 17.50%→0，工具选择正确率 91.67%→100%，provider 实测注入 Token 4246→1694（-60.10%）。完整原始计数和失败案例见 `experiments/agent-memory-optimization/reports/TASK_ONE_GLM_5_2_REPORT_CN.md`。
 
-任务二最终报告：
+任务二开发集三 seed 结果（test 锁定结果见实验报告）：
 
 | 组 | pass@1 | 平均总 Token | 平均 Turn | Skill 提取率 | Skill 命中率 |
 |---|---:|---:|---:|---:|---:|
-| S0 无 Skill | 待测 | 待测 | 待测 | — | — |
-| S1 当前机制 | 待测 | 待测 | 待测 | 待测 | 待测 |
-| S2 提取侧优化 | 待测 | 待测 | 待测 | 待测 | 待测 |
-| S3 注入侧优化 | 待测 | 待测 | 待测 | 待测 | 待测 |
-| S4 机制侧优化 | 待测 | 待测 | 待测 | 待测 | 待测 |
-| S5 整链路组合 | 待测 | 待测 | 待测 | 待测 | 待测 |
+| S0 无 Skill（全量 246 题） | 69.51% | 2631.59 | 1.00 | — | — |
+| S1 生产默认（全量 246 题） | 69.51% | 2624.44 | 1.00 | 0 | — |
+| S2 512B 在线提取（全量 246 题） | 78.05% | 3014.40 | 1.00 | 70.45% | 53.76% |
+| S3 严格注入（后半 123 题） | 69.92% | 2859.72 | 1.00 | — | 70.27% |
+| S4 去重 + 严格注入（后半 123 题） | 69.92% | 2813.80 | 1.00 | — | 68.57% |
+| S5 整链路组合（后半 123 题） | 73.17% | 3517.72 | 1.00 | 79.49% | 40.21% |
 
-报告还要附失败案例，不允许只展示平均数：至少列出 5 个未命中或错误注入案例，并记录对应 SWE-bench instance、配置、seed 和原始 trace。
+S1 的 246 题均未触发，因而与 S0 是两次无 Skill 生成；两组 pooled pass@1 相同。S2 相比 S1 提高 8.54 个百分点，但平均总 Token 增加 14.86%，是成功率换成本而非双赢。冻结同一 Skill 集的 seed=1 注入量消融中，BM25 topK=1、阈值 0.05、0.5% 预算相较 topK=3、阈值 0.01、1% 预算使 pass@1 提高 9.76 个百分点、Token 降低 10.23%，尽管 Skill 命中率更低。M1 将 37 条冻结 Skill 去重至 35 条，在 pass@1 不变时 Token 降低 1.61%。
+
+因此“多生成还是少生成”的回答已由数据锁定：**在本任务上少而准更好；提高提取率或命中率不能作为独立目标。** 若业务只看成功率可选择 512B 在线提取，但若要求 pass@1 与 Token 同时改善，本轮没有相对无 Skill 的 Pareto 胜出配置。通用生产默认值保持兼容，仅把 512B 作为短 coding 任务的显式实验配置。完整配置、逐 seed 数据、失败案例和测试集结果见 `experiments/agent-memory-optimization/reports/TASK_TWO_GLM_5_2_REPORT_CN.md`。
+
+锁定 HumanEval test（三 seed、246 题）结果：S0 无 Skill 为 `168/246 = 68.29%`、平均总 Token `2753.04`；S5 锁定组合为 `182/246 = 73.98%`、平均总 Token `3190.81`、提取率 `98/119 = 82.35%`、命中率 `59/133 = 44.36%`。组合提高 `5.69pp` 但 Token 增加 `15.90%`，与 dev 的权衡方向一致。
 
 ## 12. 简历亮点应该怎样形成
 
-当前可写“完成 200 条四指标评测集、cache-stable 注入结构和静态 Token 降幅”；在真实模型回放完成前，不能填写调用率提升。可按下列模板替换占位符：
+当前可使用以下经真实本地模型回放支持的描述：
 
 - **工具调用注入优化：** 面向 Memory/Skill/Knowledge 构建 `[N]` 条含纯 coding hard negative 的测试集，通过合并重复内容、最小工具描述和正负触发边界优化，将注入从 `[A]` 降至 `[B]` Token（`-[C]%`），同时把有效调用率由 `[D]` 提升至 `[E]`、误调用率由 `[F]` 降至 `[G]`、工具选择正确率由 `[H]` 提升至 `[I]`；重构静态工具前缀与会话快照，保证跨轮 prompt cache 前缀稳定。
-- **Skill 整链路优化：** 基于 SWE-bench 同仓任务序列，对触发阈值、抽取 Prompt、iterations、Transcript、路由与注入预算做可归因消融，将 pass@1 从 `[A]` 提升至 `[B]`、包含蒸馏的平均总 Token 降低 `[C]%`、平均 Turn 降低 `[D]%`，并将 Skill 命中率由 `[E]` 提升至 `[F]`。
+- **Skill 整链路优化：** 基于 HumanEval 164 题、3 seeds 和本地 `glm-5.2`/`bge-m3` 搭建“触发—提取—路由—注入—生命周期”可归因评测链路，修复注入预算伪旋钮与条目截断，引入结构化轨迹、scope/provenance、路由拒绝及近义去重；开发集将在线 Skill 方案 pass@1 从 69.51% 提升至 78.05%（+8.54pp），并通过严格 top1 注入相较宽松 top3 将平均总 Token 降低 10.23%、pass@1 提升 9.76pp，量化得出“少而准优于多生成/多注入”的配置结论。
 - **Agent 评测工程：** 建立可归因的 Prompt P0–P3 与 Skill S0–S5 配对实验；任务一固定报告有效调用率、误调用率、工具选择正确率和注入 Token 量，任务二固定报告 pass@1、平均总 Token、平均 Turn、Skill 提取率和 Skill 命中率。
 
-不能写入简历的内容：题目中的“理想 20 turn→8 turn”、外部方案的提升数字、开发集最佳值、单元测试 fixture 分数，以及尚未执行的推荐参数。
+不能写入简历的内容：题目中的“理想 20 turn→8 turn”、外部方案的提升数字、HumanEval 未观测到的 Turn 降幅，以及“相对无 Skill 同时提高 pass@1 并降低 Token”的表述。
 
 ## 13. 参考资料与调研边界
 
 - [Anthropic: Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents)：用于最小工具契约与评测驱动迭代，不搬运其任务收益。
 - [Anthropic Prompt Caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)：用于前缀稳定性和 usage 验证。
 - 同类机制调研范围：Cursor Rules、CLAUDE.md、Windsurf Memory、Cline Memory Bank、Aider Conventions、Continue Context、OpenHands。调研只做机制对比，不直接形成论文迁移实现或项目收益结论。
-- [SWE-bench](https://github.com/princeton-nlp/SWE-bench) 与[官方评测 harness](https://www.swebench.com/SWE-bench/guides/evaluation/)：任务二唯一评测数据集和通过判定依据。
+- [OpenAI HumanEval](https://github.com/openai/human-eval)：任务二唯一评测数据集；使用官方 `evaluate_functional_correctness` 生成逐题通过结果，并在强沙箱内执行模型代码。
 
 ---
 
@@ -793,8 +796,9 @@ Prompt cache 结构以单独的工程验收清单交付，不向上表增加第�
 - [ ] 同意按 PR0→PR5 顺序推进
 - [x] 任务一已按“公共决策策略 + 独立契约”实现
 - [x] Prompt cache 修复已实现并由专项测试验证；提交时仍可拆为独立 commit/PR
-- [ ] 同意任务二按提取侧 → 注入侧 → 机制侧 → 整链路组合的顺序实验
-- [ ] 同意任务二只使用 SWE-bench，并只报告五项指定指标
-- [ ] 已确认实验模型、预算和 SWE-bench 任务清单
+- [x] 任务二按提取侧 → 注入侧 → 机制侧 → 整链路组合的顺序实验
+- [x] 任务二只使用 HumanEval，并只报告五项指定指标
+- [x] 已确认 HumanEval 正式回放模型、预算和固定 dev/test 任务清单
+- [x] 已完成任务二 S0–S5 多 seed 回放并锁定 HumanEval test 配置；通用生产默认保持向后兼容
 
-任务二在对应范围得到确认前不修改业务代码；任务一已依据本轮用户指令进入实现阶段。
+任务二已切换为 HumanEval；官方 evaluator 下已完成 dev/test 多任务、多 seed 回放。推荐结论为：生产默认保持兼容，短 coding 任务可显式启用 512B + BM25 top1 严格注入，并在真实仓库任务上继续校准。

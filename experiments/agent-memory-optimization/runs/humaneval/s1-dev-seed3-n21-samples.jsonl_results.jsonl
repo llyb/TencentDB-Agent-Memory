@@ -1,0 +1,21 @@
+{"task_id": "HumanEval/0", "completion": "\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i+1] - sorted_numbers[i] < threshold:\n            return True\n    return False", "result": "passed", "passed": true}
+{"task_id": "HumanEval/2", "completion": "\n    return number - int(number)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/4", "completion": "\n    mean = sum(numbers) / len(numbers)\n    return sum(abs(x - mean) for x in numbers) / len(numbers)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/6", "completion": "\n    groups = paren_string.split()\n    result = []\n    for group in groups:\n        depth = 0\n        max_depth = 0\n        for char in group:\n            if char == '(':\n                depth += 1\n                if depth > max_depth:\n                    max_depth = depth\n            elif char == ')':\n                depth -= 1\n        result.append(max_depth)\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/8", "completion": "\n    sum_val = 0\n    prod_val = 1\n    for n in numbers:\n        sum_val += n\n        prod_val *= n\n    return sum_val, prod_val", "result": "passed", "passed": true}
+{"task_id": "HumanEval/10", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/12", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/14", "completion": "\n    return [string[:i] for i in range(1, len(string) + 1)]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/16", "completion": "\n    return len(set(string.lower()))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/18", "completion": "\n    if not substring:\n        return 0\n    count = 0\n    for i in range(len(string) - len(substring) + 1):\n        if string[i:i+len(substring)] == substring:\n            count += 1\n    return count", "result": "passed", "passed": true}
+{"task_id": "HumanEval/20", "completion": "\n    numbers_sorted = sorted(numbers)\n    min_diff = float('inf')\n    result = (numbers_sorted[0], numbers_sorted[1])\n    \n    for i in range(len(numbers_sorted) - 1):\n        diff = numbers_sorted[i + 1] - numbers_sorted[i]\n        if diff < min_diff:\n            min_diff = diff\n            result = (numbers_sorted[i], numbers_sorted[i + 1])\n    \n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/22", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/24", "completion": "\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return n // i\n    return 1", "result": "passed", "passed": true}
+{"task_id": "HumanEval/26", "completion": "\n    counts = {}\n    for num in numbers:\n        counts[num] = counts.get(num, 0) + 1\n    return [num for num in numbers if counts[num] == 1]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/28", "completion": "\n    return ''.join(strings)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/30", "completion": "\n    return [x for x in l if x > 0]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/32", "completion": "\n", "result": "failed: must be real number, not NoneType", "passed": false}
+{"task_id": "HumanEval/34", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/36", "completion": "\n    count = 0\n    for i in range(1, n):\n        if i % 11 == 0 or i % 13 == 0:\n            count += str(i).count('7')\n    return count", "result": "passed", "passed": true}
+{"task_id": "HumanEval/38", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/40", "completion": "\n", "result": "failed: ", "passed": false}

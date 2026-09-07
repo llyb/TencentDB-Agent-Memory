@@ -1,0 +1,41 @@
+{"task_id":"HumanEval/82","completion":"\n    n = len(string)\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True"}
+{"task_id":"HumanEval/84","completion":"\n    digit_sum = sum(int(d) for d in str(N))\n    return bin(digit_sum)[2:]"}
+{"task_id":"HumanEval/86","completion":"\n    words = s.split(' ')\n    sorted_words = [''.join(sorted(word)) for word in words]\n    return ' '.join(sorted_words)"}
+{"task_id":"HumanEval/88","completion":"\n    if len(array) <= 1:\n        return array[:]\n    if (array[0] + array[-1]) % 2 == 1:\n        return sorted(array)\n    else:\n        return sorted(array, reverse=True)"}
+{"task_id":"HumanEval/90","completion":"\n    unique = sorted(set(lst))\n    if len(unique) < 2:\n        return None\n    return unique[1]"}
+{"task_id":"HumanEval/92","completion":"\n    if type(x) is int and type(y) is int and type(z) is int:\n        return x == y + z or y == x + z or z == x + y\n    return False"}
+{"task_id":"HumanEval/94","completion":"\n"}
+{"task_id":"HumanEval/96","completion":"\n    return [num for num in range(2, n) if all(num % i != 0 for i in range(2, int(num**0.5) + 1))]"}
+{"task_id":"HumanEval/98","completion":"\n    vowels = set(\"AEIOU\")\n    return sum(1 for i, c in enumerate(s) if i % 2 == 0 and c in vowels)"}
+{"task_id":"HumanEval/100","completion":"\n    return [n + 2 * i for i in range(n)]"}
+{"task_id":"HumanEval/102","completion":"\n    if x > y:\n        return -1\n    if y % 2 == 0:\n        return y\n    if y - 1 >= x:\n        return y - 1\n    return -1"}
+{"task_id":"HumanEval/104","completion":"\n"}
+{"task_id":"HumanEval/106","completion":"\n    result = []\n    fact = 1\n    for i in range(1, n + 1):\n        fact *= i\n        if i % 2 == 0:\n            result.append(fact)\n        else:\n            result.append(i * (i + 1) // 2)\n    return result"}
+{"task_id":"HumanEval/108","completion":"\n"}
+{"task_id":"HumanEval/110","completion":"\n    odd_count = sum(1 for x in lst1 if x % 2 != 0)\n    even_count = sum(1 for x in lst2 if x % 2 == 0)\n    return \"YES\" if odd_count <= even_count else \"NO\""}
+{"task_id":"HumanEval/112","completion":"\n    chars_to_delete = set(c)\n    result = ''.join(ch for ch in s if ch not in chars_to_delete)\n    return (result, result == result[::-1])"}
+{"task_id":"HumanEval/114","completion":"\nmin_ending_here = nums[0]\n    min_so_far = nums[0]\n    for i in range(1, len(nums)):\n        min_ending_here = min(nums[i], min_ending_here + nums[i])\n        min_so_far = min(min_so_far, min_ending_here)\n    return min_so_far"}
+{"task_id":"HumanEval/116","completion":"\n"}
+{"task_id":"HumanEval/118","completion":"\n"}
+{"task_id":"HumanEval/120","completion":"\n    if k == 0:\n        return []\n    return sorted(arr)[-k:]"}
+{"task_id":"HumanEval/122","completion":"\n    return sum(x for x in arr[:k] if -99 <= x <= 99)"}
+{"task_id":"HumanEval/124","completion":"\n    if not date:\n        return False\n    if len(date) != 10:\n        return False\n    if date[2] != '-' or date[5] != '-':\n        return False\n    month_str = date[:2]\n    day_str = date[3:5]\n    year_str = date[6:]\n    if not (month_str.isdigit() and day_str.isdigit() and year_str.isdigit()):\n        return False\n    month = int(month_str)\n    day = int(day_str)\n    if month < 1 or month > 12:\n        return False\n    if month in (1, 3, 5, 7, 8, 10, 12):\n        max_days = 31\n    elif month in (4, 6, 9, 11):\n        max_days = 30\n    else:\n        max_days = 29\n    if day < 1 or day > max_days:\n        return False\n    return True"}
+{"task_id":"HumanEval/126","completion":"\n    prev = None\n    count = 0\n    for x in lst:\n        if prev is not None and x < prev:\n            return False\n        if x == prev:\n            count += 1\n            if count > 2:\n                return False\n        else:\n            prev = x"}
+{"task_id":"HumanEval/128","completion":"\n    if not arr:\n        return None\n    total = sum(abs(x) for x in arr)\n    sign_product = 1\n    for x in arr:\n        if x == 0:\n            return 0\n        sign_product *= 1 if x > 0 else -1\n    return total * sign_product"}
+{"task_id":"HumanEval/130","completion":"\n"}
+{"task_id":"HumanEval/132","completion":"\n"}
+{"task_id":"HumanEval/134","completion":"\n"}
+{"task_id":"HumanEval/136","completion":"\n    largest_neg = None\n    smallest_pos = None\n    for num in lst:\n        if num < 0:\n            if largest_neg is None or num > largest_neg:\n                largest_neg = num\n        elif num > 0:\n            if smallest_pos is None or num < smallest_pos:\n                smallest_pos = num\n    return largest_neg, smallest_pos"}
+{"task_id":"HumanEval/138","completion":"\n    return n >= 8 and n % 2 == 0"}
+{"task_id":"HumanEval/140","completion":"\ndef fix_spaces(text):\n    result = []\n    i = 0\n    while i < len(text):\n        if text[i] == ' ':\n            j = i\n            while j < len(text) and text[j] == ' ':\n                j += 1\n            count = j - i\n            if count > 2:\n                result.append('-')\n            else:\n                result.append('_' * count)\n            i = j\n        else:\n            result.append(text[i])\n            i += 1\n    return ''.join(result)"}
+{"task_id":"HumanEval/142","completion":"\n    total = 0\n    for i, val in enumerate(lst):\n        if i % 3 == 0:\n            total += val ** 2\n        elif i % 4 == 0:\n            total += val ** 3\n        else:\n            total += val\n    return total"}
+{"task_id":"HumanEval/144","completion":"\n    # Parse the fractions\n    a, b = x.split('/')\n    c, d = n.split('/')\n    \n    # Convert to integers\n    a, b = int(a), int(b)\n    c, d = int(c), int(d)\n    \n    # Calculate the product: (a*c) / (b*d)\n    numerator = a * c\n    denominator = b * d\n    \n    # Check if it's a whole number\n    return numerator % denominator == 0"}
+{"task_id":"HumanEval/146","completion":"\n    count = 0\n    for num in nums:\n        if num > 10:\n            s = str(abs(num))\n            if int(s[0]) % 2 == 1 and int(s[-1]) % 2 == 1:\n                count += 1\n    return count"}
+{"task_id":"HumanEval/148","completion":"\n    planets = [\"Mercury\", \"Venus\", \"Earth\", \"Mars\", \"Jupiter\", \"Saturn\", \"Uranus\", \"Neptune\"]\n    if planet1 not in planets or planet2 not in planets:\n        return ()\n    i1 = planets.index(planet1)\n    i2 = planets.index(planet2)\n    lo, hi = min(i1, i2), max(i1, i2)\n    return tuple(planets[lo+1:hi])"}
+{"task_id":"HumanEval/150","completion":"\n    if n < 2:\n        return y\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return y\n    return x"}
+{"task_id":"HumanEval/152","completion":"\n    return [abs(g - gue) for g, gue in zip(game, guess)]"}
+{"task_id":"HumanEval/154","completion":"\n    for i in range(len(b)):\n        rotation = b[i:] + b[:i]\n        if rotation in a:\n            return True\n    return False"}
+{"task_id":"HumanEval/156","completion":"\n    val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]\n    syms = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i']\n    roman = ''\n    for i in range(len(val)):\n        while number >= val[i]:\n            roman += syms[i]\n            number -= val[i]\n    return roman"}
+{"task_id":"HumanEval/158","completion":"\n"}
+{"task_id":"HumanEval/160","completion":"\n"}
+{"task_id":"HumanEval/162","completion":"\n    import hashlib\n    if not text:\n        return None\n    return hashlib.md5(text.encode()).hexdigest()"}

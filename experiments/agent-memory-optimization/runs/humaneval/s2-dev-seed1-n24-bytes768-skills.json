@@ -1,0 +1,10 @@
+[
+  {
+    "id": "skl-584a11907dc8",
+    "name": "max-paren-nesting-depth",
+    "description": "Applies when calculating the maximum nesting depth of parentheses or similar nested structures in a string.",
+    "content": "Method:\n1. Initialize `depth = 0` and `max_depth = 0`.\n2. Iterate through each character in the string.\n3. If the character is '(', increment `depth` by 1 and update `max_depth = max(max_depth, depth)`.\n4. If the character is ')', decrement `depth` by 1.\n5. Return `max_depth`.\n\nEdge Cases:\n- Empty string or no parentheses: returns 0.\n- Unbalanced parentheses: `max_depth` still reflects the maximum depth reached, even if `depth` does not end at 0.\n\nValidation:\n- Ensure the input is a string.",
+    "source_task_id": "HumanEval/6",
+    "sequence_index": 3
+  }
+]

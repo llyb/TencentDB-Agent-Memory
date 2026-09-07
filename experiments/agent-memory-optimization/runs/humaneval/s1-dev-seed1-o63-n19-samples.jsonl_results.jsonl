@@ -1,0 +1,19 @@
+{"task_id": "HumanEval/126", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/128", "completion": "\n    if not arr:\n        return None\n    return sum(abs(x) for x in arr) * (0 if any(x == 0 for x in arr) else (-1 if sum(x < 0 for x in arr) % 2 else 1))", "result": "passed", "passed": true}
+{"task_id": "HumanEval/130", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/132", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/134", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/136", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/138", "completion": "\n    return n >= 8 and n % 2 == 0", "result": "passed", "passed": true}
+{"task_id": "HumanEval/140", "completion": "\n", "result": "failed: This prints if this assert fails 1 (good for debugging!)", "passed": false}
+{"task_id": "HumanEval/142", "completion": "\n", "result": "failed: ", "passed": false}
+{"task_id": "HumanEval/144", "completion": "\n    x_num, x_den = map(int, x.split('/'))\n    n_num, n_den = map(int, n.split('/'))\n    return (x_num * n_num) % (x_den * n_den) == 0", "result": "passed", "passed": true}
+{"task_id": "HumanEval/146", "completion": "\n    count = 0\n    for num in nums:\n        if num > 10:\n            s = str(num)\n            if s[0] in '13579' and s[-1] in '13579':\n                count += 1\n    return count", "result": "passed", "passed": true}
+{"task_id": "HumanEval/148", "completion": "\n    planets = [\"Mercury\", \"Venus\", \"Earth\", \"Mars\", \"Jupiter\", \"Saturn\", \"Uranus\", \"Neptune\"]\n    if planet1 not in planets or planet2 not in planets:\n        return ()\n    idx1 = planets.index(planet1)\n    idx2 = planets.index(planet2)\n    if idx1 > idx2:\n        idx1, idx2 = idx2, idx1\n    return tuple(planets[idx1+1:idx2])", "result": "passed", "passed": true}
+{"task_id": "HumanEval/150", "completion": "\n    if n <= 1:\n        return y\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return y\n    return x", "result": "passed", "passed": true}
+{"task_id": "HumanEval/152", "completion": "\n    return [abs(g - s) for g, s in zip(guess, game)]", "result": "passed", "passed": true}
+{"task_id": "HumanEval/154", "completion": "\n", "result": "failed: test #0", "passed": false}
+{"task_id": "HumanEval/156", "completion": "\n    roman_numerals = [\n        (1000, 'm'), (900, 'cm'), (500, 'd'), (400, 'cd'),\n        (100, 'c'), (90, 'xc'), (50, 'l'), (40, 'xl'),\n        (10, 'x'), (9, 'ix'), (5, 'v'), (4, 'iv'),\n        (1, 'i')\n    ]\n    result = ''\n    for value, numeral in roman_numerals:\n        while number >= value:\n            result += numeral\n            number -= value\n    return result", "result": "passed", "passed": true}
+{"task_id": "HumanEval/158", "completion": "\nreturn min(words, key=lambda w: (-len(set(w)), w), default=\"\")", "result": "failed: 'return' outside function (<string>, line 13)", "passed": false}
+{"task_id": "HumanEval/160", "completion": "\n    expr = str(operand[0])\n    for i, op in enumerate(operator):\n        expr += f' {op} {operand[i+1]}'\n    return eval(expr)", "result": "passed", "passed": true}
+{"task_id": "HumanEval/162", "completion": "\n    if not text:\n        return None\n    import hashlib\n    return hashlib.md5(text.encode()).hexdigest()", "result": "passed", "passed": true}

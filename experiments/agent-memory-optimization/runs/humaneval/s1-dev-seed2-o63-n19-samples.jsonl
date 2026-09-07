@@ -1,0 +1,19 @@
+{"task_id":"HumanEval/126","completion":"\n"}
+{"task_id":"HumanEval/128","completion":"\n    if not arr:\n        return None\n    total = 0\n    sign = 1\n    for x in arr:\n        if x == 0:\n            return 0\n        total += abs(x)\n        if x < 0:\n            sign *= -1\n    return total * sign"}
+{"task_id":"HumanEval/130","completion":"\n"}
+{"task_id":"HumanEval/132","completion":"\n"}
+{"task_id":"HumanEval/134","completion":"\n    return bool(txt) and txt[-1].isalpha() and (len(txt) == 1 or txt[-2] == ' ')"}
+{"task_id":"HumanEval/136","completion":"\n"}
+{"task_id":"HumanEval/138","completion":"\n    return n % 2 == 0 and n >= 8"}
+{"task_id":"HumanEval/140","completion":"\n    result = []\n    i = 0\n    while i < len(text):\n        if text[i] == ' ':\n            j = i\n            while j < len(text) and text[j] == ' ':\n                j += 1\n            count = j"}
+{"task_id":"HumanEval/142","completion":"\n"}
+{"task_id":"HumanEval/144","completion":"\n    num1, den1 = map(int, x.split('/'))\n    num2, den2 = map(int, n.split('/'))\n    return (num1 * num2) % (den1 * den2) == 0"}
+{"task_id":"HumanEval/146","completion":"\n"}
+{"task_id":"HumanEval/148","completion":"\n"}
+{"task_id":"HumanEval/150","completion":"\n    if n <= 1:\n        return y\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return y\n    return x"}
+{"task_id":"HumanEval/152","completion":"\n    return [abs(g - s) for g, s in zip(game, guess)]"}
+{"task_id":"HumanEval/154","completion":"\n"}
+{"task_id":"HumanEval/156","completion":"\n    roman_map = [\n        (1000, 'm'),\n        (900, 'cm'),\n        (500, 'd'),\n        (400, 'cd'),\n        (100, 'c'),\n        (90, 'xc'),\n        (50, 'l'),\n        (40, 'xl'),\n        (10, 'x'),\n        (9, 'ix'),\n        (5, 'v'),\n        (4, 'iv'),\n        (1, 'i')\n    ]\n    result = ''\n    for value, numeral in roman_map:\n        while number >= value:\n            result += numeral\n            number -= value\n    return result"}
+{"task_id":"HumanEval/158","completion":"\n    max_unique = -1\n    best_word = \"\"\n    for word in words:\n        unique_count = len(set(word))\n        if unique_count > max_unique:\n            max_unique = unique_count\n            best_word = word\n        elif unique_count == max_unique and word < best_word:\n            best_word = word\n    return best_word"}
+{"task_id":"HumanEval/160","completion":"\n    expression = str(operand[0])\n    for op, num in zip(operator, operand[1:]):\n        expression += op + str(num)\n    return eval(expression)"}
+{"task_id":"HumanEval/162","completion":"\n    import hashlib\n    return hashlib.md5(text.encode('ascii')).hexdigest() if text else None"}
